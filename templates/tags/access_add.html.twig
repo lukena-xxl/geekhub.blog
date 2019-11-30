@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Тег успешно добавлен!{% endblock %}
+
+{% block body %}
+    <div class="alert alert-success" role="alert">
+        Тег "{{ tag.title }}" успешно добавлен!
+    </div>
+    <a class="btn btn-info mt-3" href="{{ path('tag_show', {'id': tag.id}) }}" role="button">Подробнее</a>
+    <a class="btn btn-success mt-3" href="{{ path('tag_add') }}" role="button">Добавить еще</a>
+{% endblock %}

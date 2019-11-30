@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Категория успешно добавлена!{% endblock %}
+
+{% block body %}
+    <div class="alert alert-success" role="alert">
+        Категория "{{ category.title }}" успешно добавлена!
+    </div>
+    <a class="btn btn-info mt-3" href="{{ path('category_show', {'id': category.id}) }}" role="button">Перейти в категорию</a>
+    <a class="btn btn-success mt-3" href="{{ path('category_add') }}" role="button">Добавить еще</a>
+{% endblock %}

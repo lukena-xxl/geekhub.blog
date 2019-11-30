@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Добавление статуса{% endblock %}
+
+{% block body %}
+    <h1>Добавление статуса</h1>
+    <form method="post" action="{{ path('status_add') }}">
+        <div class="form-group">
+            <label for="formGroupTitle">Название *</label>
+            <input type="text" name="title" class="form-control w-50" id="formGroupTitle" placeholder="Введите название">
+        </div>
+        <button type="submit" class="btn btn-success mt-3">Добавить статус</button>
+    </form>
+{% endblock %}

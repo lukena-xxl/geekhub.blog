@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}{% endblock %}</title>
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
+    </head>
+    <body class="p-4">
+        {% block menu %}
+            <div class="my-3">
+                <a class="btn btn-dark{% if controller_name == 'MainController' %} btn-lg active{% endif %}" href="{{ path('index') }}" role="button">Главная</a>
+                <a class="btn btn-dark{% if controller_name == 'CategoryController' %} btn-lg active{% endif %}" href="{{ path('category_show_all') }}" role="button">Категории</a>
+                <a class="btn btn-dark{% if controller_name == 'TagController' %} btn-lg active{% endif %}" href="{{ path('tag_show_all') }}" role="button">Теги</a>
+                <a class="btn btn-dark{% if controller_name == 'ArticleController' %} btn-lg active{% endif %}" href="{{ path('article_show_all') }}" role="button">Публикации</a>
+                <a class="btn btn-dark{% if controller_name == 'UserController' %} btn-lg active{% endif %}" href="{{ path('user_show_all') }}" role="button">Пользователи</a>
+                <a class="btn btn-dark{% if controller_name == 'StatusController' %} btn-lg active{% endif %}" href="{{ path('status_show_all') }}" role="button">Статусы пользователей</a>
+            </div>
+        {% endblock %}
+    <hr>
+        {% block body %}{% endblock %}
+        {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+        {% endblock %}
+    </body>
+</html>

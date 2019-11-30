@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Пользователи{% endblock %}
+
+{% block body %}
+    <h1>Все пользователи</h1>
+    {% if users %}
+        <form method="get" class="my-3" action="{{ path('user_show_all') }}">
+            <div>Пользователи у которых
+                <label>
+                    <select name="arg1" class="form-control">
+                        <option value="b"{% if arguments.arg1 == 'b' %} selected{% endif %}>больше</option>
+                        <option value="m"{% if arguments.arg1 == 'm' %} selected{% endif %}>меньше</option>
+                        <option value="r"{% if arguments.arg1 == 'r' %} selected{% endif %}>равно</option>
+                    </select>
+                </label>
+                <label>
+                    <input type="number" name="arg2" class="form-control" min="0" value="{{ arguments.arg2 }}" style="max-width: 70px">
+                </label>
+                публикаций в категории:
+                <label>
+                    <select name="arg3" class="form-control">
+                        <option value="" class="text-muted">всех</option>
+                        {% if categories %}
+                            {% for category in categories %}
+                                <option value="{{ category.id }}"{% if arguments.arg3 == category.id %} selected{% endif %}>{{ category.title }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </label>
+                <label>
+                    <button type="submit" class="btn btn-sm btn-secondary">Показать</button>
+                </label>
+            </div>
+        </form>
+        <table class="table mt-3">
+            <tr>
+                <th>ID</th>
+                <th>Логин</th>
+                <th>Статус</th>
+                <th>Имя</th>
+                <th>Дата регистрации</th>
+                <th>Публикации</th>
+            </tr>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.login }}</td>
+                    <td>{{ user.status.title }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.registrationDate.format("d.m.Y") }}</td>
+                    <td>{{ user.articles.count }}</td>
+                    <td>
+                        <a class="btn btn-info" href="{{ path('user_show', {'id': user.id}) }}" role="button">Подробнее</a>
+                        <a class="btn btn-warning" href="{{ path('user_edit', {'id': user.id}) }}" role="button">Редактировать</a>
+                        <a class="btn btn-danger" href="{{ path('user_delete', {'id': user.id}) }}" role="button">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p class="mt-3">Еще нет пользователей!</p>
+    {% endif %}
+    <a class="btn btn-success" href="{{ path('user_add') }}" role="button">Добавить пользователя</a>
+{% endblock %}

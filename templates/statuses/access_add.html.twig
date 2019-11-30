@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Статус успешно добавлен!{% endblock %}
+
+{% block body %}
+    <div class="alert alert-success" role="alert">
+        Статус "{{ status.title }}" успешно добавлен!
+    </div>
+    <a class="btn btn-info mt-3" href="{{ path('status_show', {'id': status.id}) }}" role="button">Подробнее</a>
+    <a class="btn btn-success mt-3" href="{{ path('status_add') }}" role="button">Добавить еще</a>
+{% endblock %}

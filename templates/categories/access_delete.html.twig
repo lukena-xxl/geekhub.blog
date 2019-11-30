@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Категория удалена!{% endblock %}
+
+{% block body %}
+    <div class="alert alert-success" role="alert">
+        Категория "{{ category.title }}" была успешно удалена!
+    </div>
+    <a class="mt-3" href="{{ path('category_show_all') }}">Перейти к списку категорий</a>
+{% endblock %}

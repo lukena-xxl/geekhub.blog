@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Категории{% endblock %}
+
+{% block body %}
+    <h1>Все категории</h1>
+    {% if categories %}
+    <table class="table mt-3">
+        <tr>
+            <th>ID</th>
+            <th>Имя</th>
+            <th>Публикации</th>
+            <th>Действия</th>
+        </tr>
+        {% for category in categories %}
+            <tr>
+                <td>{{ category.id }}</td>
+                <td>{{ category.title }}</td>
+                <td>{{ category.articles.count }}</td>
+                <td>
+                    <a class="btn btn-info" href="{{ path('category_show', {'id': category.id}) }}" role="button">Подробнее</a>
+                    <a class="btn btn-warning" href="{{ path('category_edit', {'id': category.id}) }}" role="button">Редактировать</a>
+                    <a class="btn btn-danger" href="{{ path('category_delete', {'id': category.id}) }}" role="button">Удалить</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p class="mt-3">Еще нет категорий!</p>
+    {% endif %}
+    <a class="btn btn-success" href="{{ path('category_add') }}" role="button">Добавить категорию</a>
+{% endblock %}

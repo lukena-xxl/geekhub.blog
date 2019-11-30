@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Тег удален!{% endblock %}
+
+{% block body %}
+    <div class="alert alert-success" role="alert">
+        Тег "{{ tag.title }}" был успешно удален!
+    </div>
+    <a class="mt-3" href="{{ path('tag_show_all') }}">Перейти к списку тегов</a>
+{% endblock %}

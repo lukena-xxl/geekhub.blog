@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Статусы{% endblock %}
+
+{% block body %}
+    <h1>Все статусы</h1>
+    {% if statuses %}
+    <table class="table mt-3">
+        <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Пользователи</th>
+        </tr>
+        {% for status in statuses %}
+            <tr>
+                <td>{{ status.id }}</td>
+                <td>{{ status.title }}</td>
+                <td>{{ status.users.count }}</td>
+                <td>
+                    <a class="btn btn-info" href="{{ path('status_show', {'id': status.id}) }}" role="button">Подробнее</a>
+                    <a class="btn btn-warning" href="{{ path('status_edit', {'id': status.id}) }}" role="button">Редактировать</a>
+                    <a class="btn btn-danger" href="{{ path('status_delete', {'id': status.id}) }}" role="button">Удалить</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p class="mt-3">Еще нет статусов!</p>
+    {% endif %}
+    <a class="btn btn-success" href="{{ path('status_add') }}" role="button">Добавить статус</a>
+{% endblock %}

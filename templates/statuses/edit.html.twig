@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Редактирование статуса{% endblock %}
+
+{% block body %}
+    <h1>Редактирование статуса</h1>
+    <form method="post" action="{{ path('status_edit', {'id': status.id}) }}">
+        <div class="form-group">
+            <label for="formGroupTitle">Название *</label>
+            <input type="text" name="title" value="{{ status.title }}" class="form-control w-50" id="formGroupTitle" placeholder="Введите название" required>
+        </div>
+        <input type="hidden" name="id" value="{{  status.id }}">
+        <button type="submit" class="btn btn-success mt-3">Редактировать статус</button>
+    </form>
+{% endblock %}

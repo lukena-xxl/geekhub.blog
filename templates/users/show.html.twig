@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Пользователь "{{ user.login }}"{% endblock %}
+
+{% block body %}
+    <h1>Пользователь "{{ user.login }}"</h1>
+    <div class="mt-3">
+        <div><strong>ID:</strong> {{ user.id }}</div>
+        <div><strong>Статус:</strong> {{ user.status.title }}</div>
+        <div><strong>Login:</strong> {{ user.login }}</div>
+        <div><strong>Имя:</strong> {{ user.name }}</div>
+        <div><strong>Дата регистрации:</strong> {{ user.registrationDate.format("d.m.Y H:i") }}</div>
+    </div>
+    <div class="mt-3">
+        <a class="btn btn-warning" href="{{ path('user_edit', {'id': user.id}) }}" role="button">Редактировать</a>
+        <a class="btn btn-danger" href="{{ path('user_delete', {'id': user.id}) }}" role="button">Удалить</a>
+    </div>
+{% endblock %}

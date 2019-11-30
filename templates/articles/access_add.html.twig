@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Публикация успешно добавлена!{% endblock %}
+
+{% block body %}
+    <div class="alert alert-success" role="alert">
+        Публикация "{{ article.title }}" успешно добавлена!
+    </div>
+    <a class="btn btn-info mt-3" href="{{ path('article_show', {'id': article.id}) }}" role="button">Подробнее</a>
+    <a class="btn btn-success mt-3" href="{{ path('article_add') }}" role="button">Добавить еще</a>
+{% endblock %}

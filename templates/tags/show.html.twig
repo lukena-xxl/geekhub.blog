@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Тег "{{ tag.title }}"{% endblock %}
+
+{% block body %}
+    <h1>Тег "{{ tag.title }}"</h1>
+    <div class="mt-3">
+        <div><strong>ID:</strong> {{ tag.id }}</div>
+        <div><strong>Slug:</strong> {{ tag.slug }}</div>
+        <div><strong>Название:</strong> {{ tag.title }}</div>
+    </div>
+    <div class="mt-3">
+        <a class="btn btn-warning" href="{{ path('tag_edit', {'id': tag.id}) }}" role="button">Редактировать</a>
+        <a class="btn btn-danger" href="{{ path('tag_delete', {'id': tag.id}) }}" role="button">Удалить</a>
+    </div>
+{% endblock %}

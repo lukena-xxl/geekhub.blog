@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Добавление публикации{% endblock %}
+
+{% block body %}
+    <h1>Добавление публикации</h1>
+    <form method="post" action="{{ path('article_add') }}">
+        <div class="form-group">
+            <label for="formGroupCategory">Категория *</label>
+            <select name="category" class="form-control w-50" id="formGroupCategory" required>
+                <option value="" class="text-muted">выберите категорию</option>
+                {% if categories %}
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.title }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="formGroupTags">Теги</label>
+            <select name="tags[]" class="form-control w-50" id="formGroupTags" multiple>
+                {% if tags %}
+                    {% for tag in tags %}
+                        <option value="{{ tag.id }}">{{ tag.title }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="formGroupTitle">Заголовок *</label>
+            <input type="text" name="title" class="form-control w-50" id="formGroupTitle" placeholder="Введите заголовок" required>
+        </div>
+        <div class="form-group">
+            <label for="formGroupSlug">Slug</label>
+            <input type="text" name="slug" class="form-control w-50" id="formGroupSlug" placeholder="Введите slug">
+        </div>
+        <div class="form-group">
+            <label for="formGroupImage">Главное изображение</label>
+            <input type="text" name="image" class="form-control w-50" id="formGroupImage" placeholder="Ссылка на изображение">
+        </div>
+        <div class="form-group">
+            <label for="formGroupBody">Тело публикации *</label>
+            <textarea name="body" rows="10" class="form-control w-50" id="formGroupBody" placeholder="Напишите что-нибудь" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="formGroupUser">Пользователь *</label>
+            <select name="user" class="form-control w-50" id="formGroupUser" required>
+                <option value="" class="text-muted">выберите пользователя</option>
+                {% if users %}
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.login }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success mt-3">Добавить публикацию</button>
+    </form>
+{% endblock %}

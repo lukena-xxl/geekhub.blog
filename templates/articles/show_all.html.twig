@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Публикации{% endblock %}
+
+{% block body %}
+    <h1>Все публикации</h1>
+    {% if articles %}
+    <table class="table mt-3">
+        <tr>
+            <th>ID</th>
+            <th>Изображение</th>
+            <th>Заголовок</th>
+            <th>Категория</th>
+            <th>Теги</th>
+            <th>Создана</th>
+            <th>Изменена</th>
+            <th>Добавил</th>
+            <th>Действия</th>
+        </tr>
+        {% for article in articles %}
+            <tr>
+                <td>{{ article.id }}</td>
+                <td>{{ article.image }}</td>
+                <td>{{ article.title }}</td>
+                <td>{{ article.category.title }}</td>
+                <td>{{ article.tag.count }}</td>
+                <td>{{ article.createDate.format("d.m.Y") }}</td>
+                <td>{{ article.updateDate.format("d.m.Y") }}</td>
+                <td>{{ article.user.login }}</td>
+                <td>
+                    <a class="btn btn-info mb-2" href="{{ path('article_show', {'id': article.id}) }}" role="button">Подробнее</a>
+                    <a class="btn btn-warning mb-2" href="{{ path('article_edit', {'id': article.id}) }}" role="button">Редактировать</a>
+                    <a class="btn btn-danger mb-2" href="{{ path('article_delete', {'id': article.id}) }}" role="button">Удалить</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p class="mt-3">Еще нет публикаций!</p>
+    {% endif %}
+    <a class="btn btn-success" href="{{ path('article_add') }}" role="button">Добавить публикацию</a>
+{% endblock %}
