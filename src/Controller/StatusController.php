@@ -5,9 +5,11 @@ namespace App\Controller;
 
 
 use App\Entity\Statuses;
-use App\Model\GeneralAdmin;
+use App\Form\Statuses\StatusType;
 use App\Repository\StatusesRepository;
 use App\Services\UpdateManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,36 +54,37 @@ class StatusController extends AbstractController
     /**
      * @Route("/add", name="_add")
      * @param Request $request
-     * @param ValidatorInterface $validator
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface $logger
      * @param UpdateManager $updateManager
      * @return Response
      */
-    public function addStatus(Request $request, ValidatorInterface $validator, UpdateManager $updateManager)
+    public function addStatus(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        if ($request->request->has('title')) {
-            $status = $this->prepareStatusData($request);
+        $form = $this->createForm(StatusType::class);
+        $form->handleRequest($request);
 
-            $errors = $validator->validate($status);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($status);
-                $entityManager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
 
-                $message = "Добавлен новый статус для пользователей \"" . $status->getTitle() . "\"";
-                $updateManager->notifyOfUpdate($message);
+            $status = new Statuses();
+            $status->setTitle($formData['title']);
 
-                return $this->render('statuses/access_add.html.twig', [
-                    'controller_name' => 'StatusController',
-                    'status' => $status,
-                ]);
-            }
-        } else {
-            return $this->render('statuses/add.html.twig', [
-                'controller_name' => 'UserController',
-            ]);
+            $entityManager->persist($status);
+            $entityManager->flush();
+
+            $message = "Добавлен новый статус пользователя \"" . $status->getTitle() . "\"";
+            $logger->info($message);
+            $updateManager->notifyOfUpdate($message);
+            $this->addFlash('success', $message);
+
+            return $this->redirectToRoute('status_show_all');
         }
+
+        return $this->render('statuses/add.html.twig', [
+            'controller_name' => 'StatusController',
+            'form_add' => $form->createView(),
+        ]);
     }
 
     /**
@@ -90,35 +93,10 @@ class StatusController extends AbstractController
      * @param ValidatorInterface $validator
      * @param UpdateManager $updateManager
      * @param $id
-     * @return Response
      */
     public function editStatus(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
     {
-        if ($request->request->has('id')) {
-            $status = $this->prepareStatusData($request, $id);
 
-            $errors = $validator->validate($status);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($status);
-                $entityManager->flush();
-
-                $message = "Статус с идентификатором \"" . $status->getId() . "\" был изменен!";
-                $updateManager->notifyOfUpdate($message);
-
-                return $this->render('statuses/show.html.twig', [
-                    'controller_name' => 'StatusController',
-                    'status' => $status,
-                ]);
-            }
-        } else {
-            return $this->render('statuses/edit.html.twig', [
-                'controller_name' => 'StatusController',
-                'status' => $this->getStatusData($id),
-            ]);
-        }
     }
 
     /**
@@ -148,23 +126,6 @@ class StatusController extends AbstractController
                 'status' => $status,
             ]);
         }
-    }
-
-    private function prepareStatusData($request, $id = null)
-    {
-        if ($id!=null) {
-            $status = $this->getStatusData($id);
-        } else {
-            $status = new Statuses();
-        }
-
-        $properties = [
-            'title' => 'setTitle'
-        ];
-
-        $generalAdmin = new GeneralAdmin();
-
-        return $generalAdmin->prepareData($request, $status, $properties);
     }
 
     private function getStatusData($id)

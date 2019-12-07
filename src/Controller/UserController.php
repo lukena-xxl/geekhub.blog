@@ -7,9 +7,12 @@ namespace App\Controller;
 use App\Entity\Categories;
 use App\Entity\Statuses;
 use App\Entity\Users;
-use App\Model\GeneralAdmin;
+use App\Form\Users\UserType;
 use App\Repository\UsersRepository;
 use App\Services\UpdateManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,21 +34,24 @@ class UserController extends AbstractController
      */
     public function showAllUsers(Request $request, UsersRepository $usersRepository)
     {
-        if ($request->query->has('arg1')) {
-            $arguments = [
-                'arg1' => $request->query->get('arg1'),
-                'arg2' => $request->query->get('arg2'),
-                'arg3' => $request->query->get('arg3')
-            ];
+        $arguments = [];
 
+        if ($request->query->has('sort')) {
+            $sorting = $request->query->get('sort');
+
+            if (!empty($sorting['num'])) {
+                $arguments['num'] = $sorting['num'];
+                $arguments['symbol'] = $sorting['symbol'];
+            }
+
+            if (!empty($sorting['category'])) {
+                $arguments['category'] = $sorting['category'];
+            }
+        }
+
+        if (count($arguments) > 0) {
             $users = $usersRepository->findBySort($arguments);
         } else {
-            $arguments = [
-                'arg1' => 'b',
-                'arg2' => 0,
-                'arg3' => ''
-            ];
-
             $users = $usersRepository->findAll();
         }
 
@@ -76,40 +82,46 @@ class UserController extends AbstractController
     /**
      * @Route("/add", name="_add")
      * @param Request $request
-     * @param ValidatorInterface $validator
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface $logger
      * @param UpdateManager $updateManager
      * @return Response
+     * @throws Exception
      */
-    public function addUser(Request $request, ValidatorInterface $validator, UpdateManager $updateManager)
+    public function addUser(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        if ($request->request->has('login')) {
-            $user = $this->prepareUserData($request);
+        $form = $this->createForm(UserType::class);
+        $form->handleRequest($request);
 
-            $errors = $validator->validate($user);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($user);
-                $entityManager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
 
-                $message = "Добавлен новый пользователь \"" . $user->getLogin() . "\" со статусом \"" . $user->getStatus()->getTitle() . "\"";
-                $updateManager->notifyOfUpdate($message);
+            $user = new Users();
+            $user->setName($formData['name']);
+            $user->setLogin($formData['login']);
+            $user->setPassword($formData['password']);
+            $user->setRegistrationDate(new \DateTime());
 
-                return $this->render('users/access_add.html.twig', [
-                    'controller_name' => 'UserController',
-                    'user' => $user,
-                ]);
+            $status = $entityManager->getRepository(Statuses::class)->find($formData['status']);
+            if ($status) {
+                $user->setStatus($status);
             }
-        } else {
-            $entityManager = $this->getDoctrine()->getManager();
-            $statuses = $entityManager->getRepository(Statuses::class)->findAll();
 
-            return $this->render('users/add.html.twig', [
-                'controller_name' => 'UserController',
-                'statuses' => $statuses,
-            ]);
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $message = "Добавлен новый пользователь \"" . $user->getLogin() . "\" со статусом \"" . $user->getStatus()->getTitle() . "\"";
+            $logger->info($message);
+            $updateManager->notifyOfUpdate($message);
+            $this->addFlash('success', $message);
+
+            return $this->redirectToRoute('user_show_all');
         }
+
+        return $this->render('users/add.html.twig', [
+            'controller_name' => 'UserController',
+            'form_add' => $form->createView(),
+        ]);
     }
 
     /**
@@ -118,40 +130,10 @@ class UserController extends AbstractController
      * @param ValidatorInterface $validator
      * @param UpdateManager $updateManager
      * @param $id
-     * @return Response
      */
     public function editUser(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
     {
-        if ($request->request->has('id')) {
-            $user = $this->prepareUserData($request, $id);
 
-            $errors = $validator->validate($user);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($user);
-                $entityManager->flush();
-
-                $message = "Данные пользователя с идентификатором \"" . $user->getId() . "\" были изменены!";
-                $updateManager->notifyOfUpdate($message);
-
-                return $this->render('users/show.html.twig', [
-                    'controller_name' => 'UserController',
-                    'user' => $user,
-                ]);
-            }
-
-        } else {
-            $entityManager = $this->getDoctrine()->getManager();
-            $statuses = $entityManager->getRepository(Statuses::class)->findAll();
-
-            return $this->render('users/edit.html.twig', [
-                'controller_name' => 'UserController',
-                'user' => $this->getUserData($id),
-                'statuses' => $statuses,
-            ]);
-        }
     }
 
     /**
@@ -181,35 +163,6 @@ class UserController extends AbstractController
                 'user' => $user,
             ]);
         }
-    }
-
-    private function prepareUserData($request, $id = null)
-    {
-        $properties = [
-            'login' => 'setLogin',
-            'password' => 'setPassword',
-            'name' => 'setName'
-        ];
-
-        if ($id!=null) {
-            $user = $this->getUserData($id);
-
-            if(empty($request->request->get('password'))) {
-                $request->request->set('password', $user->getPassword());
-            }
-        } else {
-            $user = new Users();
-            $properties['registration_date'] = 'setRegistrationDate';
-        }
-
-        $generalAdmin = new GeneralAdmin();
-        $entityUser = $generalAdmin->prepareData($request, $user, $properties);
-
-        $entityManager = $this->getDoctrine()->getManager();
-        $status = $entityManager->getRepository(Statuses::class)->find($request->request->get('status'));
-        $entityUser->setStatus($status);
-
-        return $entityUser;
     }
 
     private function getUserData($id)

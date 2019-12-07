@@ -4,10 +4,13 @@
 namespace App\Controller;
 
 
+use App\Entity\Articles;
 use App\Entity\Tags;
-use App\Model\GeneralAdmin;
+use App\Form\Tags\TagType;
 use App\Repository\TagsRepository;
 use App\Services\UpdateManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,16 +26,36 @@ class TagController extends AbstractController
 {
     /**
      * @Route("/show", name="_show_all")
+     * @param Request $request
      * @param TagsRepository $tagsRepository
      * @return Response
      */
-    public function showAllTags(TagsRepository $tagsRepository)
+    public function showAllTags(Request $request, TagsRepository $tagsRepository)
     {
-        $tags = $tagsRepository->findAll();
+        $arguments = [];
+
+        if ($request->query->has('sort')) {
+            $sorting = $request->query->get('sort');
+
+            if (!empty($sorting['article'])) {
+                $arguments['article'] = $sorting['article'];
+            }
+        }
+
+        if (count($arguments) > 0) {
+            $tags = $tagsRepository->findBySort($arguments);
+        } else {
+            $tags = $tagsRepository->findAll();
+        }
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $articles = $entityManager->getRepository(Articles::class)->findAll();
 
         return $this->render('tags/show_all.html.twig', [
             'controller_name' => 'TagController',
             'tags' => $tags,
+            'articles' => $articles,
+            'arguments' => $arguments,
         ]);
     }
 
@@ -52,36 +75,41 @@ class TagController extends AbstractController
     /**
      * @Route("/add", name="_add")
      * @param Request $request
-     * @param ValidatorInterface $validator
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface $logger
      * @param UpdateManager $updateManager
      * @return Response
      */
-    public function addTags(Request $request, ValidatorInterface $validator, UpdateManager $updateManager)
+    public function addTags(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        if ($request->request->has('title')) {
-            $tag = $this->prepareTagData($request);
+        $form = $this->createForm(TagType::class);
+        $form->handleRequest($request);
 
-            $errors = $validator->validate($tag);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($tag);
-                $entityManager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
 
-                $message = "Добавлен новый тег \"" . $tag->getTitle() . "\"";
-                $updateManager->notifyOfUpdate($message);
+            $tag = new Tags();
+            $tag->setTitle($formData['title']);
 
-                return $this->render('tags/access_add.html.twig', [
-                    'controller_name' => 'TagController',
-                    'tag' => $tag,
-                ]);
+            if (!empty($formData['slug'])) {
+                $tag->setSlug($formData['slug']);
             }
-        } else {
-            return $this->render('tags/add.html.twig', [
-                'controller_name' => 'TagController',
-            ]);
+
+            $entityManager->persist($tag);
+            $entityManager->flush();
+
+            $message = "Добавлен новый тег \"" . $tag->getTitle() . "\"";
+            $logger->info($message);
+            $updateManager->notifyOfUpdate($message);
+            $this->addFlash('success', $message);
+
+            return $this->redirectToRoute('tag_show_all');
         }
+
+        return $this->render('tags/add.html.twig', [
+            'controller_name' => 'TagController',
+            'form_add' => $form->createView(),
+        ]);
     }
 
     /**
@@ -90,35 +118,10 @@ class TagController extends AbstractController
      * @param ValidatorInterface $validator
      * @param UpdateManager $updateManager
      * @param $id
-     * @return Response
      */
     public function editTag(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
     {
-        if ($request->request->has('id')) {
-            $tag = $this->prepareTagData($request, $id);
 
-            $errors = $validator->validate($tag);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($tag);
-                $entityManager->flush();
-
-                $message = "Тег с идентификатором \"" . $tag->getId() . "\" была изменен!";
-                $updateManager->notifyOfUpdate($message);
-
-                return $this->render('tags/show.html.twig', [
-                    'controller_name' => 'TagController',
-                    'tag' => $tag,
-                ]);
-            }
-        } else {
-            return $this->render('tags/edit.html.twig', [
-                'controller_name' => 'TagController',
-                'tag' => $this->getTagData($id),
-            ]);
-        }
     }
 
     /**
@@ -149,24 +152,6 @@ class TagController extends AbstractController
             'controller_name' => 'TagController',
             'tag' => $tag,
         ]);
-    }
-
-    private function prepareTagData($request, $id = null)
-    {
-        if ($id!=null) {
-            $tag = $this->getTagData($id);
-        } else {
-            $tag = new Tags();
-        }
-
-        $properties = [
-            'slug' => 'setSlug',
-            'title' => 'setTitle'
-        ];
-
-        $generalAdmin = new GeneralAdmin();
-
-        return $generalAdmin->prepareData($request, $tag, $properties, 'title');
     }
 
     private function getTagData($id)

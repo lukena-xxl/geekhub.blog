@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Tags;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query\Expr\Join;
 
 /**
  * @method Tags|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,32 +20,18 @@ class TagsRepository extends ServiceEntityRepository
         parent::__construct($registry, Tags::class);
     }
 
-    // /**
-    //  * @return Tags[] Returns an array of Tags objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function findBySort($arguments)
     {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('t.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $qb = $this->createQueryBuilder('t');
 
-    /*
-    public function findOneBySomeField($value): ?Tags
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        if (!empty($arguments['article'])) {
+            $qb->innerJoin('t.articles', 'a', 'WITH', 'a.id = :article')
+                ->setParameter('article', $arguments['article']);
+        }
+
+        $qb->addOrderBy('t.id', 'ASC');
+        $query = $qb->getQuery();
+
+        return $query->execute();
     }
-    */
 }

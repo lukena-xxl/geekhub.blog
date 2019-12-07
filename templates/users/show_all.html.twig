@@ -4,35 +4,35 @@
 
 {% block body %}
     <h1>Все пользователи</h1>
+    <form method="get" class="my-3" action="{{ path('user_show_all') }}">
+        <div>Пользователи у которых
+            <label>
+                <select name="sort[symbol]" class="form-control">
+                    <option value="more"{% if arguments.symbol is defined %}{% if arguments.symbol == 'more' %} selected{% endif %}{% endif %}>больше</option>
+                    <option value="less"{% if arguments.symbol is defined %}{% if arguments.symbol == 'less' %} selected{% endif %}{% endif %}>меньше</option>
+                    <option value="equally"{% if arguments.symbol is defined %}{% if arguments.symbol == 'equally' %} selected{% endif %}{% endif %}>равно</option>
+                </select>
+            </label>
+            <label>
+                <input type="number" name="sort[num]" class="form-control" min="0" value="{% if arguments.num is defined %}{{ arguments.num }}{% endif %}" placeholder="0">
+            </label>
+            публикаций в:
+            <label>
+                <select name="sort[category]" class="form-control">
+                    <option value="" class="text-muted">всех категориях</option>
+                    {% if categories %}
+                        {% for category in categories %}
+                            <option value="{{ category.id }}"{% if arguments.category is defined %}{% if arguments.category == category.id %} selected{% endif %}{% endif %}>{{ category.title }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </label>
+            <label>
+                <button type="submit" class="btn btn-sm btn-secondary">Показать</button>
+            </label>
+        </div>
+    </form>
     {% if users %}
-        <form method="get" class="my-3" action="{{ path('user_show_all') }}">
-            <div>Пользователи у которых
-                <label>
-                    <select name="arg1" class="form-control">
-                        <option value="b"{% if arguments.arg1 == 'b' %} selected{% endif %}>больше</option>
-                        <option value="m"{% if arguments.arg1 == 'm' %} selected{% endif %}>меньше</option>
-                        <option value="r"{% if arguments.arg1 == 'r' %} selected{% endif %}>равно</option>
-                    </select>
-                </label>
-                <label>
-                    <input type="number" name="arg2" class="form-control" min="0" value="{{ arguments.arg2 }}" style="max-width: 70px">
-                </label>
-                публикаций в категории:
-                <label>
-                    <select name="arg3" class="form-control">
-                        <option value="" class="text-muted">всех</option>
-                        {% if categories %}
-                            {% for category in categories %}
-                                <option value="{{ category.id }}"{% if arguments.arg3 == category.id %} selected{% endif %}>{{ category.title }}</option>
-                            {% endfor %}
-                        {% endif %}
-                    </select>
-                </label>
-                <label>
-                    <button type="submit" class="btn btn-sm btn-secondary">Показать</button>
-                </label>
-            </div>
-        </form>
         <table class="table mt-3">
             <tr>
                 <th>ID</th>
@@ -41,6 +41,7 @@
                 <th>Имя</th>
                 <th>Дата регистрации</th>
                 <th>Публикации</th>
+                <th>Действия</th>
             </tr>
             {% for user in users %}
                 <tr>
@@ -51,9 +52,9 @@
                     <td>{{ user.registrationDate.format("d.m.Y") }}</td>
                     <td>{{ user.articles.count }}</td>
                     <td>
-                        <a class="btn btn-info" href="{{ path('user_show', {'id': user.id}) }}" role="button">Подробнее</a>
-                        <a class="btn btn-warning" href="{{ path('user_edit', {'id': user.id}) }}" role="button">Редактировать</a>
-                        <a class="btn btn-danger" href="{{ path('user_delete', {'id': user.id}) }}" role="button">Удалить</a>
+                        <a class="btn btn-info" href="{{ path('user_show', {'id': user.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
+                        <a class="btn btn-warning" href="{{ path('user_edit', {'id': user.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+                        <a class="btn btn-danger" href="{{ path('user_delete', {'id': user.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
                     </td>
                 </tr>
             {% endfor %}

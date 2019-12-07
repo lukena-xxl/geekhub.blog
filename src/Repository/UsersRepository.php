@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Users;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query\Expr\Join;
 
 /**
  * @method Users|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,37 +20,35 @@ class UsersRepository extends ServiceEntityRepository
         parent::__construct($registry, Users::class);
     }
 
-    public function findBySort($arg)
+    public function findBySort($arguments)
     {
+        $arrSymbol = [
+            'more' => '>',
+            'less' => '<',
+            'equally' => '='
+        ];
 
-    }
+        $qb = $this->createQueryBuilder('u');
 
-    // /**
-    //  * @return Users[] Returns an array of Users objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        if (!empty($arguments['category'])) {
+            $qb->join('u.articles', 'a')
+                ->andWhere('a.category = :category')
+                ->setParameter('category', $arguments['category']);
+        }
 
-    /*
-    public function findOneBySomeField($value): ?Users
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        if (!empty($arguments['num'])) {
+            if (!empty($arguments['category'])) {
+                $qb->andWhere('(SELECT COUNT(a1.id) FROM App\Entity\Articles a1 WHERE a1.user=u.id AND a1.category=a.category) ' . $arrSymbol[$arguments['symbol']] . ' :num');
+            } else {
+                $qb->andWhere('(SELECT COUNT(a.id) FROM App\Entity\Articles a WHERE a.user=u.id) ' . $arrSymbol[$arguments['symbol']] . ' :num');
+            }
+
+            $qb->setParameter('num', $arguments['num']);
+        }
+
+        $qb->addOrderBy('u.login', 'ASC');
+        $query = $qb->getQuery();
+
+        return $query->execute();
     }
-    */
 }

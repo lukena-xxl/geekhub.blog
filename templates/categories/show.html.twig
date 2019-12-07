@@ -12,7 +12,7 @@
         <div><strong>Количетво статей:</strong> {{ category.articles.count }}</div>
     </div>
     <div class="mt-3">
-        <a class="btn btn-warning" href="{{ path('category_edit', {'id': category.id}) }}" role="button">Редактировать</a>
-        <a class="btn btn-danger" href="{{ path('category_delete', {'id': category.id}) }}" role="button">Удалить</a>
+        <a class="btn btn-warning" href="{{ path('category_edit', {'id': category.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+        <a class="btn btn-danger" href="{{ path('category_delete', {'id': category.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
     </div>
 {% endblock %}

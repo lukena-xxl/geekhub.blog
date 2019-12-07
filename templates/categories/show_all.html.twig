@@ -4,6 +4,24 @@
 
 {% block body %}
     <h1>Все категории</h1>
+    <form method="get" class="my-3" action="{{ path('category_show_all') }}">
+        <div>Категории в которых
+            <label>
+                <select name="sort[symbol]" class="form-control">
+                    <option value="more"{% if arguments.symbol is defined %}{% if arguments.symbol == 'more' %} selected{% endif %}{% endif %}>больше</option>
+                    <option value="less"{% if arguments.symbol is defined %}{% if arguments.symbol == 'less' %} selected{% endif %}{% endif %}>меньше</option>
+                    <option value="equally"{% if arguments.symbol is defined %}{% if arguments.symbol == 'equally' %} selected{% endif %}{% endif %}>равно</option>
+                </select>
+            </label>
+            <label>
+                <input type="number" name="sort[num]" class="form-control" min="0" value="{% if arguments.num is defined %}{{ arguments.num }}{% endif %}" placeholder="0">
+            </label>
+            публикаций
+            <label>
+                <button type="submit" class="btn btn-sm btn-secondary">Показать</button>
+            </label>
+        </div>
+    </form>
     {% if categories %}
     <table class="table mt-3">
         <tr>
@@ -18,9 +36,9 @@
                 <td>{{ category.title }}</td>
                 <td>{{ category.articles.count }}</td>
                 <td>
-                    <a class="btn btn-info" href="{{ path('category_show', {'id': category.id}) }}" role="button">Подробнее</a>
-                    <a class="btn btn-warning" href="{{ path('category_edit', {'id': category.id}) }}" role="button">Редактировать</a>
-                    <a class="btn btn-danger" href="{{ path('category_delete', {'id': category.id}) }}" role="button">Удалить</a>
+                    <a class="btn btn-info" href="{{ path('category_show', {'id': category.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
+                    <a class="btn btn-warning" href="{{ path('category_edit', {'id': category.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+                    <a class="btn btn-danger" href="{{ path('category_delete', {'id': category.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
                 </td>
             </tr>
         {% endfor %}

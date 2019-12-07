@@ -4,9 +4,11 @@
 namespace App\Controller;
 
 use App\Entity\Categories;
-use App\Model\GeneralAdmin;
+use App\Form\Categories\CategoryType;
 use App\Repository\CategoriesRepository;
 use App\Services\UpdateManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,16 +24,33 @@ class CategoryController extends AbstractController
 {
     /**
      * @Route("/show", name="_show_all")
+     * @param Request $request
      * @param CategoriesRepository $categoriesRepository
      * @return Response
      */
-    public function showAllCategories(CategoriesRepository $categoriesRepository)
+    public function showAllCategories(Request $request, CategoriesRepository $categoriesRepository)
     {
-        $categories = $categoriesRepository->findAll();
+        $arguments = [];
+
+        if ($request->query->has('sort')) {
+            $sorting = $request->query->get('sort');
+
+            if (!empty($sorting['num'])) {
+                $arguments['num'] = $sorting['num'];
+                $arguments['symbol'] = $sorting['symbol'];
+            }
+        }
+
+        if (count($arguments) > 0) {
+            $categories = $categoriesRepository->findBySort($arguments);
+        } else {
+            $categories = $categoriesRepository->findAll();
+        }
 
         return $this->render('categories/show_all.html.twig', [
             'controller_name' => 'CategoryController',
             'categories' => $categories,
+            'arguments' => $arguments,
         ]);
     }
 
@@ -51,36 +70,42 @@ class CategoryController extends AbstractController
     /**
      * @Route("/add", name="_add")
      * @param Request $request
-     * @param ValidatorInterface $validator
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface $logger
      * @param UpdateManager $updateManager
      * @return Response
      */
-    public function addCategory(Request $request, ValidatorInterface $validator, UpdateManager $updateManager)
+    public function addCategory(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        if ($request->request->has('title')) {
-            $category = $this->prepareCategoryData($request);
+        $form = $this->createForm(CategoryType::class);
+        $form->handleRequest($request);
 
-            $errors = $validator->validate($category);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($category);
-                $entityManager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
 
-                $message = "Добавлена новая категория \"" . $category->getTitle() . "\"";
-                $updateManager->notifyOfUpdate($message);
+            $category = new Categories();
+            $category->setTitle($formData['title']);
+            $category->setDescription($formData['description']);
 
-                return $this->render('categories/access_add.html.twig', [
-                    'controller_name' => 'CategoryController',
-                    'category' => $category,
-                ]);
+            if (!empty($formData['slug'])) {
+                $category->setSlug($formData['slug']);
             }
-        } else {
-            return $this->render('categories/add.html.twig', [
-                'controller_name' => 'CategoryController',
-            ]);
+
+            $entityManager->persist($category);
+            $entityManager->flush();
+
+            $message = "Добавлена новая категория \"" . $category->getTitle() . "\"";
+            $logger->info($message);
+            $updateManager->notifyOfUpdate($message);
+            $this->addFlash('success', $message);
+
+            return $this->redirectToRoute('category_show_all');
         }
+
+        return $this->render('categories/add.html.twig', [
+            'controller_name' => 'CategoryController',
+            'form_add' => $form->createView(),
+        ]);
     }
 
     /**
@@ -89,35 +114,10 @@ class CategoryController extends AbstractController
      * @param ValidatorInterface $validator
      * @param UpdateManager $updateManager
      * @param $id
-     * @return Response
      */
     public function editCategory(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
     {
-        if ($request->request->has('id')) {
-            $category = $this->prepareCategoryData($request, $id);
 
-            $errors = $validator->validate($category);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($category);
-                $entityManager->flush();
-
-                $message = "Категория с идентификатором \"" . $category->getId() . "\" была изменена!";
-                $updateManager->notifyOfUpdate($message);
-
-                return $this->render('categories/show.html.twig', [
-                    'controller_name' => 'CategoryController',
-                    'category' => $category,
-                ]);
-            }
-        } else {
-            return $this->render('categories/edit.html.twig', [
-                'controller_name' => 'CategoryController',
-                'category' => $this->getCategoryData($id),
-            ]);
-        }
     }
 
     /**
@@ -147,25 +147,6 @@ class CategoryController extends AbstractController
                 'category' => $category,
             ]);
         }
-    }
-
-    private function prepareCategoryData($request, $id = null)
-    {
-        if ($id!=null) {
-            $category = $this->getCategoryData($id);
-        } else {
-            $category = new Categories();
-        }
-
-        $properties = [
-            'slug' => 'setSlug',
-            'title' => 'setTitle',
-            'description' => 'setDescription'
-        ];
-
-        $generalAdmin = new GeneralAdmin();
-
-        return $generalAdmin->prepareData($request, $category, $properties, 'title');
     }
 
     private function getCategoryData($id)
