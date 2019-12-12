@@ -67,9 +67,25 @@ class Articles
      */
     private $user;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $go_on_public;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_visible = false;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Users", mappedBy="favorite_articles")
+     */
+    private $in_favorites;
+
     public function __construct()
     {
         $this->tag = new ArrayCollection();
+        $this->in_favorites = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -195,6 +211,58 @@ class Articles
     public function setUser(?Users $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getGoOnPublic(): ?\DateTimeInterface
+    {
+        return $this->go_on_public;
+    }
+
+    public function setGoOnPublic(?\DateTimeInterface $go_on_public): self
+    {
+        $this->go_on_public = $go_on_public;
+
+        return $this;
+    }
+
+    public function getIsVisible(): ?bool
+    {
+        return $this->is_visible;
+    }
+
+    public function setIsVisible(?bool $is_visible): self
+    {
+        $this->is_visible = $is_visible;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Users[]
+     */
+    public function getInFavorites(): Collection
+    {
+        return $this->in_favorites;
+    }
+
+    public function addInFavorites(Users $inFavorites): self
+    {
+        if (!$this->in_favorites->contains($inFavorites)) {
+            $this->in_favorites[] = $inFavorites;
+            $inFavorites->addFavoriteArticle($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInFavorites(Users $inFavorites): self
+    {
+        if ($this->in_favorites->contains($inFavorites)) {
+            $this->in_favorites->removeElement($inFavorites);
+            $inFavorites->removeFavoriteArticle($this);
+        }
 
         return $this;
     }

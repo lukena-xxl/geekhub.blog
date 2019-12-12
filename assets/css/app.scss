@@ -1,9 +1,23 @@
+
+$danger: darken(#CD5C5C, 1%);
+
+@import "~bootstrap/scss/bootstrap";
+@import '~@fortawesome/fontawesome-free/css/all.css';
+
+label {
+  color: #F5871F;
+  font-weight: bold;
+}
+
 label.required:after {
   content: "*";
   padding-left: 5px;
 }
 
-/*$danger: darken(#428bca, 20%);*/
+select option[value=""] {
+  color: #999999;
+}
 
-@import "~bootstrap/scss/bootstrap";
-@import '~@fortawesome/fontawesome-free/css/all.css';
+table td {
+  vertical-align: middle!important;
+}

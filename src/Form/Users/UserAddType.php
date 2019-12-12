@@ -2,8 +2,10 @@
 
 namespace App\Form\Users;
 
-use App\Repository\StatusesRepository;
+use App\Entity\Statuses;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -11,23 +13,10 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class UserType extends AbstractType
+class UserAddType extends AbstractType
 {
-    private $statusesRepository;
-
-    public function __construct(StatusesRepository $statusesRepository)
-    {
-        $this->statusesRepository = $statusesRepository;
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $statuses = $this->statusesRepository->findAll();
-        $choices = [];
-        foreach ($statuses as $status) {
-            $choices[$status->getTitle()] = $status->getId();
-        }
-
         $builder
             ->add('name', TextType::class, [
                 'required' => false,
@@ -49,12 +38,27 @@ class UserType extends AbstractType
                     'placeholder' => 'Введите пароль',
                 ],
             ])
-            ->add('status', ChoiceType::class, [
+            ->add('status', EntityType::class, [
                 'label' => 'Статус пользователя',
-                'choices' => $choices,
+                'class' => Statuses::class,
+                'choice_label' => 'title',
+            ])
+            ->add('gender', ChoiceType::class, [
+                'required' => false,
+                'label' => 'Пол',
+                'choices' => [
+                    'я мужчина' => 'male',
+                    'я женщина' => 'female'
+                ],
+                'placeholder' => 'выберите пол',
+            ])
+            ->add('birth_date', BirthdayType::class, [
+                'required' => false,
+                'widget' => 'single_text',
+                'label' => 'Дата рождения',
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Добавить пользователя',
+                'label' => 'Сохранить',
                 'attr' => [
                     'class' => 'btn-success',
                 ],

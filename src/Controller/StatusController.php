@@ -5,7 +5,7 @@ namespace App\Controller;
 
 
 use App\Entity\Statuses;
-use App\Form\Statuses\StatusType;
+use App\Form\Statuses\StatusAddType;
 use App\Repository\StatusesRepository;
 use App\Services\UpdateManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,7 +14,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class StatusController
@@ -47,7 +46,7 @@ class StatusController extends AbstractController
     {
         return $this->render('statuses/show.html.twig', [
             'controller_name' => 'StatusController',
-            'status' => $this->getStatusData($id),
+            'status' => $this->findStatus($id),
         ]);
     }
 
@@ -61,7 +60,10 @@ class StatusController extends AbstractController
      */
     public function addStatus(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        $form = $this->createForm(StatusType::class);
+        $form = $this->createForm(StatusAddType::class, null, [
+            'action' => $this->generateUrl('status_add'),
+            'method' => 'post',
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -73,7 +75,7 @@ class StatusController extends AbstractController
             $entityManager->persist($status);
             $entityManager->flush();
 
-            $message = "Добавлен новый статус пользователя \"" . $status->getTitle() . "\"";
+            $message = "Добавлен новый статус \"" . $status->getTitle() . "\"";
             $logger->info($message);
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
@@ -84,30 +86,55 @@ class StatusController extends AbstractController
         return $this->render('statuses/add.html.twig', [
             'controller_name' => 'StatusController',
             'form_add' => $form->createView(),
+            'title' => 'Добавление статуса',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
      * @param Request $request
-     * @param ValidatorInterface $validator
-     * @param UpdateManager $updateManager
+     * @param EntityManagerInterface $entityManager
      * @param $id
+     * @return Response
      */
-    public function editStatus(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
+    public function editStatus(Request $request, EntityManagerInterface $entityManager, $id)
     {
+        $status = $this->findStatus($id);
 
+        $form = $this->createForm(StatusAddType::class, $status, [
+            'action' => $this->generateUrl('status_edit', ['id' => $status->getId()]),
+            'method' => 'post',
+        ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
+
+            $entityManager->persist($formData);
+            $entityManager->flush();
+
+            $message = "Статус был успешно изменен!";
+            $this->addFlash('success', $message);
+        }
+
+        return $this->render('statuses/add.html.twig', [
+            'controller_name' => 'StatusController',
+            'form_add' => $form->createView(),
+            'title' => 'Редактирование статуса "' . $status->getTitle() . '"',
+        ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
      * @param UpdateManager $updateManager
+     * @param LoggerInterface $logger
      * @param $id
      * @return Response
      */
-    public function deleteStatus(UpdateManager $updateManager, $id)
+    public function deleteStatus(UpdateManager $updateManager, LoggerInterface $logger, $id)
     {
-        $status = $this->getStatusData($id);
+        $status = $this->findStatus($id);
 
         if ($status->getUsers()->count() > 0) {
             throw $this->createNotFoundException(
@@ -118,17 +145,20 @@ class StatusController extends AbstractController
             $entityManager->remove($status);
             $entityManager->flush();
 
-            $message = "Статус пользователя с идентификатором \"" . $id . "\" был удален!";
+            $message = "Статус \"" . $status->getTitle() . "\" был удален";
+            $logger->info($message);
             $updateManager->notifyOfUpdate($message);
+            $this->addFlash('success', $message);
 
-            return $this->render('statuses/access_delete.html.twig', [
-                'controller_name' => 'StatusController',
-                'status' => $status,
-            ]);
+            return $this->redirectToRoute('status_show_all');
         }
     }
 
-    private function getStatusData($id)
+    /**
+     * @param $id
+     * @return Statuses
+     */
+    private function findStatus($id)
     {
         $entityManager = $this->getDoctrine()->getManager();
         $status = $entityManager->getRepository(Statuses::class)->find($id);

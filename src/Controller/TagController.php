@@ -1,12 +1,10 @@
 <?php
 
-
 namespace App\Controller;
 
-
-use App\Entity\Articles;
 use App\Entity\Tags;
-use App\Form\Tags\TagType;
+use App\Form\Tags\TagAddType;
+use App\Form\Tags\TagSortType;
 use App\Repository\TagsRepository;
 use App\Services\UpdateManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,7 +13,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class TagController
@@ -32,14 +29,18 @@ class TagController extends AbstractController
      */
     public function showAllTags(Request $request, TagsRepository $tagsRepository)
     {
+        $form = $this->createForm(TagSortType::class, null, [
+            'action' => $this->generateUrl('tag_show_all'),
+            'method' => 'get',
+        ]);
+
+        $form->handleRequest($request);
         $arguments = [];
 
-        if ($request->query->has('sort')) {
-            $sorting = $request->query->get('sort');
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
 
-            if (!empty($sorting['article'])) {
-                $arguments['article'] = $sorting['article'];
-            }
+            $arguments['article'] = $formData['article'];
         }
 
         if (count($arguments) > 0) {
@@ -48,14 +49,10 @@ class TagController extends AbstractController
             $tags = $tagsRepository->findAll();
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $articles = $entityManager->getRepository(Articles::class)->findAll();
-
         return $this->render('tags/show_all.html.twig', [
             'controller_name' => 'TagController',
             'tags' => $tags,
-            'articles' => $articles,
-            'arguments' => $arguments,
+            'form_sort' => $form->createView(),
         ]);
     }
 
@@ -68,7 +65,7 @@ class TagController extends AbstractController
     {
         return $this->render('tags/show.html.twig', [
             'controller_name' => 'TagController',
-            'tag' => $this->getTagData($id),
+            'tag' => $this->findTag($id),
         ]);
     }
 
@@ -82,7 +79,11 @@ class TagController extends AbstractController
      */
     public function addTags(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        $form = $this->createForm(TagType::class);
+        $form = $this->createForm(TagAddType::class, null, [
+            'action' => $this->generateUrl('tag_add'),
+            'method' => 'post',
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -94,6 +95,9 @@ class TagController extends AbstractController
             if (!empty($formData['slug'])) {
                 $tag->setSlug($formData['slug']);
             }
+
+            !empty($formData['is_visible']) ? $i = 1 : $i = 0;
+            $tag->setIsVisible($i);
 
             $entityManager->persist($tag);
             $entityManager->flush();
@@ -109,30 +113,55 @@ class TagController extends AbstractController
         return $this->render('tags/add.html.twig', [
             'controller_name' => 'TagController',
             'form_add' => $form->createView(),
+            'title' => 'Добавление тега',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
      * @param Request $request
-     * @param ValidatorInterface $validator
-     * @param UpdateManager $updateManager
+     * @param EntityManagerInterface $entityManager
      * @param $id
+     * @return Response
      */
-    public function editTag(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
+    public function editTag(Request $request, EntityManagerInterface $entityManager, $id)
     {
+        $tag = $this->findTag($id);
 
+        $form = $this->createForm(TagAddType::class, $tag, [
+            'action' => $this->generateUrl('tag_edit', ['id' => $tag->getId()]),
+            'method' => 'post',
+        ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
+
+            $entityManager->persist($formData);
+            $entityManager->flush();
+
+            $message = "Тег был успешно изменен!";
+            $this->addFlash('success', $message);
+        }
+
+        return $this->render('tags/add.html.twig', [
+            'controller_name' => 'TagController',
+            'form_add' => $form->createView(),
+            'title' => 'Редактирование тега "' . $tag->getTitle() . '"',
+        ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
      * @param UpdateManager $updateManager
+     * @param LoggerInterface $logger
      * @param $id
      * @return Response
      */
-    public function deleteTag(UpdateManager $updateManager, $id)
+    public function deleteTag(UpdateManager $updateManager, LoggerInterface $logger, $id)
     {
-        $tag = $this->getTagData($id);
+        $tag = $this->findTag($id);
 
         $articlesCollection = $tag->getArticles();
         if ($articlesCollection) {
@@ -145,16 +174,19 @@ class TagController extends AbstractController
         $entityManager->remove($tag);
         $entityManager->flush();
 
-        $message = "Тег с идентификатором \"" . $id . "\" был удален!";
+        $message = "Тег \"" . $tag->getTitle() . "\" был удален";
+        $logger->info($message);
         $updateManager->notifyOfUpdate($message);
+        $this->addFlash('success', $message);
 
-        return $this->render('tags/access_delete.html.twig', [
-            'controller_name' => 'TagController',
-            'tag' => $tag,
-        ]);
+        return $this->redirectToRoute('tag_show_all');
     }
 
-    private function getTagData($id)
+    /**
+     * @param $id
+     * @return Tags
+     */
+    private function findTag($id)
     {
         $entityManager = $this->getDoctrine()->getManager();
         $tag = $entityManager->getRepository(Tags::class)->find($id);

@@ -35,6 +35,11 @@ class Tags
      */
     private $articles;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_visible = false;
+
     public function __construct()
     {
         $this->articles = new ArrayCollection();
@@ -93,6 +98,18 @@ class Tags
             $this->articles->removeElement($article);
             $article->removeTag($this);
         }
+
+        return $this;
+    }
+
+    public function getIsVisible(): ?bool
+    {
+        return $this->is_visible;
+    }
+
+    public function setIsVisible(?bool $is_visible): self
+    {
+        $this->is_visible = $is_visible;
 
         return $this;
     }

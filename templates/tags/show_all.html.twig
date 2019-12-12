@@ -3,36 +3,30 @@
 {% block title %}Теги{% endblock %}
 
 {% block body %}
-    <h1>Все теги</h1>
-    <form method="get" class="my-3" action="{{ path('tag_show_all') }}">
-        <div>Теги
-            <label>
-                <select name="sort[article]" class="form-control">
-                    <option value="" class="text-muted">всех публикаций</option>
-                    {% if tags %}
-                        {% for article in articles %}
-                            <option value="{{ article.id }}"{% if arguments.article is defined %}{% if arguments.article == article.id %} selected{% endif %}{% endif %}>{{ article.title }}</option>
-                        {% endfor %}
-                    {% endif %}
-                </select>
-            </label>
-            <label>
-                <button type="submit" class="btn btn-sm btn-secondary">Показать</button>
-            </label>
-        </div>
-    </form>
+    <a class="btn btn-success" href="{{ path('tag_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Добавить тег</a>
+    <div class="my-3">
+        {{ form_start(form_sort) }}
+        <div class="d-inline-block">Теги</div>
+        <div class="d-inline-block">{{ form_row(form_sort.article) }}</div>
+        <div class="d-inline-block">{{ form_row(form_sort.submit) }}</div>
+        {{ form_end(form_sort) }}
+    </div>
     {% if tags %}
     <table class="table mt-3">
         <tr>
             <th>ID</th>
             <th>Название</th>
             <th>Публикации</th>
-            <th>Действия</th>
+            <th style="min-width:200px">Действия</th>
         </tr>
         {% for tag in tags %}
             <tr>
                 <td>{{ tag.id }}</td>
-                <td>{{ tag.title }}</td>
+                <td {% if tag.isVisible == 0 %}
+                        class="text-danger"
+                    {% else %}
+                        class="text-dark"
+                    {% endif %}>{{ tag.title }}</td>
                 <td>{{ tag.articles.count }}</td>
                 <td>
                     <a class="btn btn-info" href="{{ path('tag_show', {'id': tag.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
@@ -45,5 +39,4 @@
     {% else %}
         <p class="mt-3">Еще нет тегов!</p>
     {% endif %}
-    <a class="btn btn-success" href="{{ path('tag_add') }}" role="button">Добавить тег</a>
 {% endblock %}

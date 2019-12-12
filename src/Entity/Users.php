@@ -49,9 +49,42 @@ class Users
      */
     private $status;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Articles", inversedBy="in_favorites")
+     */
+    private $favorite_articles;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $target = false;
+
+    /**
+     * @ORM\Column(type="string", length=10, nullable=true)
+     */
+    private $gender;
+
+    /**
+     * @ORM\Column(type="date", nullable=true)
+     */
+    private $birth_date;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Users", inversedBy="in_favorites")
+     */
+    private $favorite_users;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Users", mappedBy="favorite_users")
+     */
+    private $in_favorites;
+
     public function __construct()
     {
         $this->articles = new ArrayCollection();
+        $this->favorite_articles = new ArrayCollection();
+        $this->favorite_users = new ArrayCollection();
+        $this->in_favorites = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -146,6 +179,122 @@ class Users
     public function setStatus(?Statuses $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Articles[]
+     */
+    public function getFavoriteArticles(): Collection
+    {
+        return $this->favorite_articles;
+    }
+
+    public function addFavoriteArticle(Articles $favoriteArticle): self
+    {
+        if (!$this->favorite_articles->contains($favoriteArticle)) {
+            $this->favorite_articles[] = $favoriteArticle;
+        }
+
+        return $this;
+    }
+
+    public function removeFavoriteArticle(Articles $favoriteArticle): self
+    {
+        if ($this->favorite_articles->contains($favoriteArticle)) {
+            $this->favorite_articles->removeElement($favoriteArticle);
+        }
+
+        return $this;
+    }
+
+    public function getTarget(): ?bool
+    {
+        return $this->target;
+    }
+
+    public function setTarget(?bool $target): self
+    {
+        $this->target = $target;
+
+        return $this;
+    }
+
+    public function getGender(): ?string
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?string $gender): self
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
+    public function getBirthDate(): ?\DateTimeInterface
+    {
+        return $this->birth_date;
+    }
+
+    public function setBirthDate(?\DateTimeInterface $birth_date): self
+    {
+        $this->birth_date = $birth_date;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|self[]
+     */
+    public function getFavoriteUsers(): Collection
+    {
+        return $this->favorite_users;
+    }
+
+    public function addFavoriteUser(self $favoriteUser): self
+    {
+        if (!$this->favorite_users->contains($favoriteUser)) {
+            $this->favorite_users[] = $favoriteUser;
+        }
+
+        return $this;
+    }
+
+    public function removeFavoriteUser(self $favoriteUser): self
+    {
+        if ($this->favorite_users->contains($favoriteUser)) {
+            $this->favorite_users->removeElement($favoriteUser);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|self[]
+     */
+    public function getInFavorites(): Collection
+    {
+        return $this->in_favorites;
+    }
+
+    public function addInFavorite(self $inFavorite): self
+    {
+        if (!$this->in_favorites->contains($inFavorite)) {
+            $this->in_favorites[] = $inFavorite;
+            $inFavorite->addFavoriteUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInFavorite(self $inFavorite): self
+    {
+        if ($this->in_favorites->contains($inFavorite)) {
+            $this->in_favorites->removeElement($inFavorite);
+            $inFavorite->removeFavoriteUser($this);
+        }
 
         return $this;
     }

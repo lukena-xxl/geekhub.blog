@@ -7,20 +7,33 @@
             {{ encore_entry_link_tags('app') }}
         {% endblock %}
     </head>
-    <body class="p-4">
+    <body>
         {% block menu %}
-            <div class="my-3">
-                <a class="btn btn-dark{% if controller_name == 'MainController' %} btn-lg active{% endif %}" href="{{ path('index') }}" role="button">Главная</a>
-                <a class="btn btn-dark{% if controller_name == 'CategoryController' %} btn-lg active{% endif %}" href="{{ path('category_show_all') }}" role="button">Категории</a>
-                <a class="btn btn-dark{% if controller_name == 'TagController' %} btn-lg active{% endif %}" href="{{ path('tag_show_all') }}" role="button">Теги</a>
-                <a class="btn btn-dark{% if controller_name == 'ArticleController' %} btn-lg active{% endif %}" href="{{ path('article_show_all') }}" role="button">Публикации</a>
-                <a class="btn btn-dark{% if controller_name == 'UserController' %} btn-lg active{% endif %}" href="{{ path('user_show_all') }}" role="button">Пользователи</a>
-                <a class="btn btn-dark{% if controller_name == 'StatusController' %} btn-lg active{% endif %}" href="{{ path('status_show_all') }}" role="button">Статусы пользователей</a>
-            </div>
+            <ul class="nav nav-pills bg-light p-3 mb-3 sticky-top border-bottom">
+                <li class="nav-item">
+                    <a class="nav-link{% if controller_name == 'MainController' %} active{% endif %}" href="{{ path('index') }}"><i class="fas fa-home"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if controller_name == 'CategoryController' %} active{% endif %}" href="{{ path('category_show_all') }}">Категории</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if controller_name == 'TagController' %} active{% endif %}" href="{{ path('tag_show_all') }}">Теги</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if controller_name == 'ArticleController' %} active{% endif %}" href="{{ path('article_show_all') }}">Публикации</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if controller_name == 'UserController' %} active{% endif %}" href="{{ path('user_show_all') }}">Пользователи</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link{% if controller_name == 'StatusController' %} active{% endif %}" href="{{ path('status_show_all') }}">Статусы пользователей</a>
+                </li>
+            </ul>
         {% endblock %}
-    <hr>
-        {% include 'common/flash_messages.html.twig' %}
-        {% block body %}{% endblock %}
+        <div class="px-3 pb-3">
+            {% include 'common/flash_messages.html.twig' %}
+            {% block body %}{% endblock %}
+        </div>
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
         {% endblock %}

@@ -1,23 +1,21 @@
 <?php
 
-
 namespace App\Controller;
 
-
-use App\Entity\Categories;
 use App\Entity\Statuses;
 use App\Entity\Users;
-use App\Form\Users\UserType;
-use App\Repository\UsersRepository;
+use App\Form\Users\UserAddType;
+use App\Form\Users\UserSortType;
+use App\Form\Users\UserTargetType;
 use App\Services\UpdateManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class UserController
@@ -29,25 +27,31 @@ class UserController extends AbstractController
     /**
      * @Route("/show", name="_show_all")
      * @param Request $request
-     * @param UsersRepository $usersRepository
+     * @param EntityManagerInterface $entityManager
      * @return Response
      */
-    public function showAllUsers(Request $request, UsersRepository $usersRepository)
+    public function showAllUsers(Request $request, EntityManagerInterface $entityManager)
     {
+        $formSort = $this->createForm(UserSortType::class, null, [
+            'action' => $this->generateUrl('user_show_all'),
+            'method' => 'get',
+        ]);
+
+        $formSort->handleRequest($request);
         $arguments = [];
 
-        if ($request->query->has('sort')) {
-            $sorting = $request->query->get('sort');
+        if ($formSort->isSubmitted() && $formSort->isValid()) {
+            $formDataSort = $formSort->getData();
 
-            if (!empty($sorting['num'])) {
-                $arguments['num'] = $sorting['num'];
-                $arguments['symbol'] = $sorting['symbol'];
-            }
+            $arguments['num'] = $formDataSort['num'];
+            $arguments['symbol'] = $formDataSort['symbol'];
 
-            if (!empty($sorting['category'])) {
-                $arguments['category'] = $sorting['category'];
+            if (!empty($formDataSort['category'])) {
+                $arguments['category'] = $formDataSort['category'];
             }
         }
+
+        $usersRepository = $entityManager->getRepository(Users::class);
 
         if (count($arguments) > 0) {
             $users = $usersRepository->findBySort($arguments);
@@ -55,14 +59,34 @@ class UserController extends AbstractController
             $users = $usersRepository->findAll();
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $categories = $entityManager->getRepository(Categories::class)->findAll();
+        $formTarget = $this->createForm(UserTargetType::class, null, [
+            'action' => $this->generateUrl('user_show_all'),
+            'method' => 'get',
+        ]);
+
+        $formTarget->handleRequest($request);
+
+        if ($formTarget->isSubmitted() && $formTarget->isValid()) {
+            $formDataTarget = $formTarget->getData();
+
+            $user = $formDataTarget['user'];
+            $usersRepository->resetTargetUser();
+
+            if ($user) {
+                $user->setTarget(1);
+                $entityManager->persist($user);
+                $entityManager->flush();
+            }
+        } else {
+            $user = $usersRepository->findOneBy(['target' => 1]);
+        }
 
         return $this->render('users/show_all.html.twig', [
             'controller_name' => 'UserController',
             'users' => $users,
-            'categories' => $categories,
-            'arguments' => $arguments,
+            'target_user' => $user,
+            'form_sort' => $formSort->createView(),
+            'form_target' => $formTarget->createView(),
         ]);
     }
 
@@ -75,7 +99,7 @@ class UserController extends AbstractController
     {
         return $this->render('users/show.html.twig', [
             'controller_name' => 'UserController',
-            'user' => $this->getUserData($id),
+            'user' => $this->findUser($id),
         ]);
     }
 
@@ -90,7 +114,10 @@ class UserController extends AbstractController
      */
     public function addUser(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        $form = $this->createForm(UserType::class);
+        $form = $this->createForm(UserAddType::class, null, [
+            'action' => $this->generateUrl('user_add'),
+            'method' => 'post',
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -101,6 +128,8 @@ class UserController extends AbstractController
             $user->setLogin($formData['login']);
             $user->setPassword($formData['password']);
             $user->setRegistrationDate(new \DateTime());
+            $user->setBirthDate($formData['birth_date']);
+            $user->setGender($formData['gender']);
 
             $status = $entityManager->getRepository(Statuses::class)->find($formData['status']);
             if ($status) {
@@ -121,51 +150,103 @@ class UserController extends AbstractController
         return $this->render('users/add.html.twig', [
             'controller_name' => 'UserController',
             'form_add' => $form->createView(),
+            'title' => 'Добавление пользователя',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
      * @param Request $request
-     * @param ValidatorInterface $validator
-     * @param UpdateManager $updateManager
+     * @param EntityManagerInterface $entityManager
      * @param $id
+     * @return Response
      */
-    public function editUser(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
+    public function editUser(Request $request, EntityManagerInterface $entityManager, $id)
     {
+        $user = $this->findUser($id);
 
+        $form = $this->createForm(UserAddType::class, $user, [
+            'action' => $this->generateUrl('user_edit', ['id' => $user->getId()]),
+            'method' => 'post',
+            ])
+            ->remove('password')
+            ->add('password', PasswordType::class, [
+                'required' => false,
+                'label' => 'Пароль',
+                'help' => 'Пароль должен содержать цифры и буквы',
+                'attr' => [
+                    'placeholder' => 'Введите пароль',
+                    ],
+                'empty_data' => $user->getPassword(),
+                ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
+
+            $entityManager->persist($formData);
+            $entityManager->flush();
+
+            $message = "Информация о пользователе была успешно изменена!";
+            $this->addFlash('success', $message);
+        }
+
+        return $this->render('users/add.html.twig', [
+            'controller_name' => 'UserController',
+            'form_add' => $form->createView(),
+            'title' => 'Редактирование пользователя "' . $user->getLogin() . '"',
+        ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
      * @param UpdateManager $updateManager
+     * @param LoggerInterface $logger
      * @param $id
      * @return Response
      */
-    public function deleteUser(UpdateManager $updateManager, $id)
+    public function deleteUser(UpdateManager $updateManager, LoggerInterface $logger, $id)
     {
-        $user = $this->getUserData($id);
+        $user = $this->findUser($id);
 
         if ($user->getArticles()->count() > 0) {
             throw $this->createNotFoundException(
                 'К пользователю привязаны некоторые статьи. Уберите привязку и повторите попытку удаления!'
             );
         } else {
+            $favoriteArticles = $user->getFavoriteArticles();
+            if ($favoriteArticles) {
+                foreach ($favoriteArticles as $favoriteArticle) {
+                    $user->removeFavoriteArticle($favoriteArticle);
+                }
+            }
+
+            $favoriteUsers = $user->getFavoriteUsers();
+            if ($favoriteUsers) {
+                foreach ($favoriteUsers as $favoriteUser) {
+                    $user->removeFavoriteUser($favoriteUser);
+                }
+            }
+
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($user);
             $entityManager->flush();
 
-            $message = "Пользователь с идентификатором \"" . $id . "\" был удален!";
+            $message = "Пользователь \"" . $user->getLogin() . "\" был удален";
+            $logger->info($message);
             $updateManager->notifyOfUpdate($message);
+            $this->addFlash('success', $message);
 
-            return $this->render('users/access_delete.html.twig', [
-                'controller_name' => 'UserController',
-                'user' => $user,
-            ]);
+            return $this->redirectToRoute('user_show_all');
         }
     }
 
-    private function getUserData($id)
+    /**
+     * @param $id
+     * @return Users
+     */
+    private function findUser($id)
     {
         $entityManager = $this->getDoctrine()->getManager();
         $user = $entityManager->getRepository(Users::class)->find($id);

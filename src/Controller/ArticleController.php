@@ -6,8 +6,8 @@ use App\Entity\Articles;
 use App\Entity\Categories;
 use App\Entity\Tags;
 use App\Entity\Users;
-use App\Form\Articles\ArticleType;
-use App\Repository\ArticlesRepository;
+use App\Form\Articles\ArticleAddType;
+use App\Form\Articles\ArticleSortType;
 use App\Services\UpdateManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -16,7 +16,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class ArticleController
@@ -28,55 +27,58 @@ class ArticleController extends AbstractController
     /**
      * @Route("/show", name="_show_all")
      * @param Request $request
-     * @param ArticlesRepository $articlesRepository
+     * @param EntityManagerInterface $entityManager
      * @return Response
      */
-    public function showAllArticles(Request $request, ArticlesRepository $articlesRepository)
+    public function showAllArticles(Request $request, EntityManagerInterface $entityManager)
     {
+        $form = $this->createForm(ArticleSortType::class, null, [
+            'action' => $this->generateUrl('article_show_all'),
+            'method' => 'get',
+        ]);
+
+        $form->handleRequest($request);
         $arguments = [];
 
-        if ($request->query->has('sort')) {
-            $sorting = $request->query->get('sort');
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
 
-            if (!empty($sorting['user'])) {
-                $arguments['user'] = $sorting['user'];
+            if (!empty($formData['user'])) {
+                $arguments['user'] = $formData['user'];
             }
 
-            if (!empty($sorting['category'])) {
-                $arguments['category'] = $sorting['category'];
+            if (!empty($formData['category'])) {
+                $arguments['category'] = $formData['category'];
             }
 
-            if (!empty($sorting['tag'])) {
-                $arguments['tag'] = $sorting['tag'];
+            if (!empty($formData['tag'])) {
+                $arguments['tag'] = $formData['tag'];
             }
 
-            if (!empty($sorting['create_from'])) {
-                $arguments['create_from'] = $sorting['create_from'];
+            if (!empty($formData['from'])) {
+                $arguments['create_from'] = $formData['from'];
             }
 
-            if (!empty($sorting['create_to'])) {
-                $arguments['create_to'] = $sorting['create_to'];
+            if (!empty($formData['to'])) {
+                $arguments['create_to'] = $formData['to']->setTime(23, 59, 59);
             }
         }
+
+        $articleRepository = $entityManager->getRepository(Articles::class);
 
         if (count($arguments) > 0) {
-            $articles = $articlesRepository->findBySort($arguments);
+            $articles = $articleRepository->findBySort($arguments);
         } else {
-            $articles = $articlesRepository->findAll();
+            $articles = $articleRepository->findAll();
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
-        $categories = $entityManager->getRepository(Categories::class)->findAll();
-        $users = $entityManager->getRepository(Users::class)->findAll();
-        $tags = $entityManager->getRepository(Tags::class)->findAll();
+        $targetUser = $entityManager->getRepository(Users::class)->findOneBy(['target' => 1]);
 
         return $this->render('articles/show_all.html.twig', [
             'controller_name' => 'ArticleController',
             'articles' => $articles,
-            'users' => $users,
-            'categories' => $categories,
-            'tags' => $tags,
-            'arguments' => $arguments,
+            'target_user' => $targetUser,
+            'form_sort' => $form->createView(),
         ]);
     }
 
@@ -89,7 +91,7 @@ class ArticleController extends AbstractController
     {
         return $this->render('articles/show.html.twig', [
             'controller_name' => 'ArticleController',
-            'article' => $this->getArticleData($id),
+            'article' => $this->findArticle($id),
         ]);
     }
 
@@ -104,17 +106,33 @@ class ArticleController extends AbstractController
      */
     public function addArticle(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        $form = $this->createForm(ArticleType::class);
+        $form = $this->createForm(ArticleAddType::class, null, [
+            'action' => $this->generateUrl('article_add'),
+            'method' => 'post',
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $formData = $form->getData();
 
+            $datetime = new \DateTime();
+
             $article = new Articles();
             $article->setTitle($formData['title']);
             $article->setBody($formData['body']);
-            $article->setCreateDate(new \DateTime());
-            $article->setUpdateDate(new \DateTime());
+
+            //$article->setCreateDate($datetime);
+            $article->setCreateDate($formData['create_date']);
+
+            $article->setUpdateDate($datetime);
+
+            if(!empty($formData['go_on_public'])) {
+                $article->setGoOnPublic($formData['go_on_public']);
+            }
+
+            !empty($formData['is_visible']) ? $i = 1 : $i = 0;
+            $article->setIsVisible($i);
 
             if (!empty($formData['slug'])) {
                 $article->setSlug($formData['slug']);
@@ -154,30 +172,57 @@ class ArticleController extends AbstractController
         return $this->render('articles/add.html.twig', [
             'controller_name' => 'ArticleController',
             'form_add' => $form->createView(),
+            'title' => 'Добавление публикации',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
      * @param Request $request
-     * @param ValidatorInterface $validator
-     * @param UpdateManager $updateManager
+     * @param EntityManagerInterface $entityManager
      * @param $id
+     * @return Response
+     * @throws Exception
      */
-    public function editArticle(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
+    public function editArticle(Request $request, EntityManagerInterface $entityManager, $id)
     {
+        $article = $this->findArticle($id);
 
+        $form = $this->createForm(ArticleAddType::class, $article, [
+            'action' => $this->generateUrl('article_edit', ['id' => $article->getId()]),
+            'method' => 'post',
+        ])->remove('create_date');
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
+            $article->setUpdateDate(new \DateTime());
+
+            $entityManager->persist($formData);
+            $entityManager->flush();
+
+            $message = "Публикация была успешно изменена!";
+            $this->addFlash('success', $message);
+        }
+
+        return $this->render('articles/add.html.twig', [
+            'controller_name' => 'ArticleController',
+            'form_add' => $form->createView(),
+            'title' => 'Редактирование публикации "' . $article->getTitle() . '"',
+        ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
      * @param UpdateManager $updateManager
+     * @param LoggerInterface $logger
      * @param $id
      * @return Response
      */
-    public function deleteArticle(UpdateManager $updateManager, $id)
+    public function deleteArticle(UpdateManager $updateManager, LoggerInterface $logger, $id)
     {
-        $article = $this->getArticleData($id);
+        $article = $this->findArticle($id);
 
         $assignedTags = $article->getTag();
         if ($assignedTags) {
@@ -190,66 +235,19 @@ class ArticleController extends AbstractController
         $entityManager->remove($article);
         $entityManager->flush();
 
-        $message = "Публикация с идентификатором \"" . $id . "\" была удалена!";
+        $message = "Публикация \"" . $article->getTitle() . "\" была удалена";
+        $logger->info($message);
         $updateManager->notifyOfUpdate($message);
+        $this->addFlash('success', $message);
 
-        return $this->render('articles/access_delete.html.twig', [
-            'controller_name' => 'ArticleController',
-            'article' => $article,
-        ]);
+        return $this->redirectToRoute('article_show_all');
     }
 
-    private function prepareArticleData($request, $id = null)
-    {
-        $properties = [
-            'slug' => 'setSlug',
-            'title' => 'setTitle',
-            'body' => 'setBody',
-            'image' => 'setImage',
-            'update_date' => 'setUpdateDate'
-        ];
-
-        if ($id != null) {
-            $article = $this->getArticleData($id);
-            $assignedTags = $article->getTag();
-        } else {
-            $article = new Articles();
-            $assignedTags = false;
-            $properties['create_date'] = 'setCreateDate';
-        }
-
-        $generalAdmin = new GeneralAdmin();
-        $entityArticle = $generalAdmin->prepareData($request, $article, $properties, 'title');
-
-        $entityManager = $this->getDoctrine()->getManager();
-        $user = $entityManager->getRepository(Users::class)->find($request->request->get('user'));
-        $entityArticle->setUser($user);
-
-        $category = $entityManager->getRepository(Categories::class)->find($request->request->get('category'));
-        $entityArticle->setCategory($category);
-
-        $tags = $request->request->get('tags');
-        if ($tags) {
-            $repositoryTag = $entityManager->getRepository(Tags::class);
-
-            if ($assignedTags) {
-                foreach ($assignedTags as $assignedTag) {
-                    $entityArticle->removeTag($assignedTag);
-                }
-            }
-
-            foreach ($tags as $tag_id) {
-                $tag = $repositoryTag->find($tag_id);
-                if ($tag) {
-                    $entityArticle->addTag($tag);
-                }
-            }
-        }
-
-        return $entityArticle;
-    }
-
-    private function getArticleData($id)
+    /**
+     * @param $id
+     * @return Articles
+     */
+    private function findArticle($id)
     {
         $entityManager = $this->getDoctrine()->getManager();
         $article = $entityManager->getRepository(Articles::class)->find($id);

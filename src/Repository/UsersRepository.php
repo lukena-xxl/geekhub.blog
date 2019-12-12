@@ -34,19 +34,27 @@ class UsersRepository extends ServiceEntityRepository
             $qb->join('u.articles', 'a')
                 ->andWhere('a.category = :category')
                 ->setParameter('category', $arguments['category']);
+
+            $qb->andWhere('(SELECT COUNT(a1.id) FROM App\Entity\Articles a1 WHERE a1.user=u.id AND a1.category=a.category) ' . $arrSymbol[$arguments['symbol']] . ' :num');
+        } else {
+            $qb->andWhere('(SELECT COUNT(a.id) FROM App\Entity\Articles a WHERE a.user=u.id) ' . $arrSymbol[$arguments['symbol']] . ' :num');
         }
 
-        if (!empty($arguments['num'])) {
-            if (!empty($arguments['category'])) {
-                $qb->andWhere('(SELECT COUNT(a1.id) FROM App\Entity\Articles a1 WHERE a1.user=u.id AND a1.category=a.category) ' . $arrSymbol[$arguments['symbol']] . ' :num');
-            } else {
-                $qb->andWhere('(SELECT COUNT(a.id) FROM App\Entity\Articles a WHERE a.user=u.id) ' . $arrSymbol[$arguments['symbol']] . ' :num');
-            }
+        $qb->setParameter('num', $arguments['num']);
 
-            $qb->setParameter('num', $arguments['num']);
-        }
+        $qb->addOrderBy('u.id', 'ASC');
+        $query = $qb->getQuery();
 
-        $qb->addOrderBy('u.login', 'ASC');
+        return $query->execute();
+    }
+
+    public function resetTargetUser()
+    {
+        $qb = $this->createQueryBuilder('u');
+        $qb->update()
+            ->set('u.target', ':target')
+            ->setParameter('target', 0);
+
         $query = $qb->getQuery();
 
         return $query->execute();
