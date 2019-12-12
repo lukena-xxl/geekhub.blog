@@ -10,6 +10,7 @@
             <th>ID</th>
             <th>Название</th>
             <th>Пользователи</th>
+            <th>Действия</th>
         </tr>
         {% for status in statuses %}
             <tr>
@@ -17,9 +18,9 @@
                 <td>{{ status.title }}</td>
                 <td>{{ status.users.count }}</td>
                 <td>
-                    <a class="btn btn-info" href="{{ path('status_show', {'id': status.id}) }}" role="button">Подробнее</a>
-                    <a class="btn btn-warning" href="{{ path('status_edit', {'id': status.id}) }}" role="button">Редактировать</a>
-                    <a class="btn btn-danger" href="{{ path('status_delete', {'id': status.id}) }}" role="button">Удалить</a>
+                    <a class="btn btn-info" href="{{ path('status_show', {'id': status.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
+                    <a class="btn btn-warning" href="{{ path('status_edit', {'id': status.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+                    <a class="btn btn-danger" href="{{ path('status_delete', {'id': status.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
                 </td>
             </tr>
         {% endfor %}

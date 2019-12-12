@@ -1,16 +1,17 @@
 <?php
 
-
 namespace App\Controller;
-
 
 use App\Entity\Articles;
 use App\Entity\Categories;
 use App\Entity\Tags;
 use App\Entity\Users;
-use App\Model\GeneralAdmin;
+use App\Form\Articles\ArticleType;
 use App\Repository\ArticlesRepository;
 use App\Services\UpdateManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,16 +27,56 @@ class ArticleController extends AbstractController
 {
     /**
      * @Route("/show", name="_show_all")
+     * @param Request $request
      * @param ArticlesRepository $articlesRepository
      * @return Response
      */
-    public function showAllArticles(ArticlesRepository $articlesRepository)
+    public function showAllArticles(Request $request, ArticlesRepository $articlesRepository)
     {
-        $articles = $articlesRepository->findAll();
+        $arguments = [];
+
+        if ($request->query->has('sort')) {
+            $sorting = $request->query->get('sort');
+
+            if (!empty($sorting['user'])) {
+                $arguments['user'] = $sorting['user'];
+            }
+
+            if (!empty($sorting['category'])) {
+                $arguments['category'] = $sorting['category'];
+            }
+
+            if (!empty($sorting['tag'])) {
+                $arguments['tag'] = $sorting['tag'];
+            }
+
+            if (!empty($sorting['create_from'])) {
+                $arguments['create_from'] = $sorting['create_from'];
+            }
+
+            if (!empty($sorting['create_to'])) {
+                $arguments['create_to'] = $sorting['create_to'];
+            }
+        }
+
+        if (count($arguments) > 0) {
+            $articles = $articlesRepository->findBySort($arguments);
+        } else {
+            $articles = $articlesRepository->findAll();
+        }
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $categories = $entityManager->getRepository(Categories::class)->findAll();
+        $users = $entityManager->getRepository(Users::class)->findAll();
+        $tags = $entityManager->getRepository(Tags::class)->findAll();
 
         return $this->render('articles/show_all.html.twig', [
             'controller_name' => 'ArticleController',
             'articles' => $articles,
+            'users' => $users,
+            'categories' => $categories,
+            'tags' => $tags,
+            'arguments' => $arguments,
         ]);
     }
 
@@ -55,44 +96,65 @@ class ArticleController extends AbstractController
     /**
      * @Route("/add", name="_add")
      * @param Request $request
-     * @param ValidatorInterface $validator
+     * @param EntityManagerInterface $entityManager
+     * @param LoggerInterface $logger
      * @param UpdateManager $updateManager
      * @return Response
+     * @throws Exception
      */
-    public function addArticle(Request $request, ValidatorInterface $validator, UpdateManager $updateManager)
+    public function addArticle(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        if ($request->request->has('title')) {
-            $article = $this->prepareArticleData($request);
+        $form = $this->createForm(ArticleType::class);
+        $form->handleRequest($request);
 
-            $errors = $validator->validate($article);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($article);
-                $entityManager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
 
-                $message = "Добавлена новая публикация \"" . $article->getTitle() . "\"";
-                $updateManager->notifyOfUpdate($message);
+            $article = new Articles();
+            $article->setTitle($formData['title']);
+            $article->setBody($formData['body']);
+            $article->setCreateDate(new \DateTime());
+            $article->setUpdateDate(new \DateTime());
 
-                return $this->render('articles/access_add.html.twig', [
-                    'controller_name' => 'ArticleController',
-                    'article' => $article,
-                ]);
+            if (!empty($formData['slug'])) {
+                $article->setSlug($formData['slug']);
             }
-        } else {
-            $entityManager = $this->getDoctrine()->getManager();
-            $categories = $entityManager->getRepository(Categories::class)->findAll();
-            $tags = $entityManager->getRepository(Tags::class)->findAll();
-            $users = $entityManager->getRepository(Users::class)->findAll();
 
-            return $this->render('articles/add.html.twig', [
-                'controller_name' => 'ArticleController',
-                'categories' => $categories,
-                'tags' => $tags,
-                'users' => $users,
-            ]);
+            $category = $entityManager->getRepository(Categories::class)->find($formData['category']);
+            if ($category) {
+                $article->setCategory($category);
+            }
+
+            $user = $entityManager->getRepository(Users::class)->find($formData['user']);
+            if ($user) {
+                $article->setUser($user);
+            }
+
+            if (count($formData['tag']) > 0) {
+                $repositoryTag = $entityManager->getRepository(Tags::class);
+                foreach ($formData['tag'] as $tag_id) {
+                    $tag = $repositoryTag->find($tag_id);
+                    if ($tag) {
+                        $article->addTag($tag);
+                    }
+                }
+            }
+
+            $entityManager->persist($article);
+            $entityManager->flush();
+
+            $message = "Добавлена новая публикация \"" . $article->getTitle() . "\" в категорию \"" . $article->getCategory()->getTitle() . "\"";
+            $logger->info($message);
+            $updateManager->notifyOfUpdate($message);
+            $this->addFlash('success', $message);
+
+            return $this->redirectToRoute('article_show_all');
         }
+
+        return $this->render('articles/add.html.twig', [
+            'controller_name' => 'ArticleController',
+            'form_add' => $form->createView(),
+        ]);
     }
 
     /**
@@ -101,47 +163,10 @@ class ArticleController extends AbstractController
      * @param ValidatorInterface $validator
      * @param UpdateManager $updateManager
      * @param $id
-     * @return Response
      */
     public function editArticle(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
     {
-        if ($request->request->has('id')) {
-            $article = $this->prepareArticleData($request, $id);
 
-
-            $errors = $validator->validate($article);
-            if (count($errors) > 0) {
-                return new Response((string) $errors, 400);
-            } else {
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($article);
-                $entityManager->flush();
-
-                $message = "Публикация с идентификатором \"" . $article->getId() . "\" была изменена!";
-                $updateManager->notifyOfUpdate($message);
-
-                return $this->render('articles/show.html.twig', [
-                    'controller_name' => 'ArticleController',
-                    'article' => $article,
-                ]);
-            }
-
-
-
-        } else {
-            $entityManager = $this->getDoctrine()->getManager();
-            $categories = $entityManager->getRepository(Categories::class)->findAll();
-            $tags = $entityManager->getRepository(Tags::class)->findAll();
-            $users = $entityManager->getRepository(Users::class)->findAll();
-
-            return $this->render('articles/edit.html.twig', [
-                'controller_name' => 'ArticleController',
-                'article' => $this->getArticleData($id),
-                'categories' => $categories,
-                'tags' => $tags,
-                'users' => $users,
-            ]);
-        }
     }
 
     /**
@@ -184,7 +209,7 @@ class ArticleController extends AbstractController
             'update_date' => 'setUpdateDate'
         ];
 
-        if ($id!=null) {
+        if ($id != null) {
             $article = $this->getArticleData($id);
             $assignedTags = $article->getTag();
         } else {

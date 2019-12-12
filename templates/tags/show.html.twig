@@ -10,7 +10,7 @@
         <div><strong>Название:</strong> {{ tag.title }}</div>
     </div>
     <div class="mt-3">
-        <a class="btn btn-warning" href="{{ path('tag_edit', {'id': tag.id}) }}" role="button">Редактировать</a>
-        <a class="btn btn-danger" href="{{ path('tag_delete', {'id': tag.id}) }}" role="button">Удалить</a>
+        <a class="btn btn-warning" href="{{ path('tag_edit', {'id': tag.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+        <a class="btn btn-danger" href="{{ path('tag_delete', {'id': tag.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
     </div>
 {% endblock %}

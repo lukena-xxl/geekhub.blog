@@ -4,6 +4,53 @@
 
 {% block body %}
     <h1>Все публикации</h1>
+    <form method="get" class="my-3" action="{{ path('article_show_all') }}">
+        <div>Публикации
+            <label>
+                <select name="sort[user]" class="form-control">
+                    <option value="" class="text-muted">всех пользователей</option>
+                    {% if users %}
+                        {% for user in users %}
+                            <option value="{{ user.id }}"{% if arguments.user is defined %}{%if arguments.user == user.id %} selected{% endif %}{% endif %}>{{ user.login }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </label>
+            в
+            <label>
+                <select name="sort[category]" class="form-control">
+                    <option value="" class="text-muted">всех категориях</option>
+                    {% if categories %}
+                        {% for category in categories %}
+                            <option value="{{ category.id }}"{% if arguments.category is defined %}{% if arguments.category == category.id %} selected{% endif %}{% endif %}>{{ category.title }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </label>
+            c
+            <label>
+                <select name="sort[tag]" class="form-control">
+                    <option value="" class="text-muted">всеми тегами</option>
+                    {% if tags %}
+                        {% for tag in tags %}
+                            <option value="{{ tag.id }}"{% if arguments.tag is defined %}{% if arguments.tag == tag.id %} selected{% endif %}{% endif %}>{{ tag.title }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </label><br>
+            созданные c
+            <label>
+                <input type="date" name="sort[create_from]" value="{% if arguments.create_from is defined %}{{ arguments.create_from }}{% endif %}" class="form-control">
+            </label>
+            по
+            <label>
+                <input type="date" name="sort[create_to]" value="{% if arguments.create_to is defined %}{{ arguments.create_to }}{% endif %}" class="form-control">
+            </label>
+            <label>
+                <button type="submit" class="btn btn-sm btn-secondary">Показать</button>
+            </label>
+        </div>
+    </form>
     {% if articles %}
     <table class="table mt-3">
         <tr>
@@ -28,9 +75,9 @@
                 <td>{{ article.updateDate.format("d.m.Y") }}</td>
                 <td>{{ article.user.login }}</td>
                 <td>
-                    <a class="btn btn-info mb-2" href="{{ path('article_show', {'id': article.id}) }}" role="button">Подробнее</a>
-                    <a class="btn btn-warning mb-2" href="{{ path('article_edit', {'id': article.id}) }}" role="button">Редактировать</a>
-                    <a class="btn btn-danger mb-2" href="{{ path('article_delete', {'id': article.id}) }}" role="button">Удалить</a>
+                    <a class="btn btn-info mb-2" href="{{ path('article_show', {'id': article.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
+                    <a class="btn btn-warning mb-2" href="{{ path('article_edit', {'id': article.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+                    <a class="btn btn-danger mb-2" href="{{ path('article_delete', {'id': article.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
                 </td>
             </tr>
         {% endfor %}

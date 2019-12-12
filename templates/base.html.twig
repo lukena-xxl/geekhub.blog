@@ -19,6 +19,7 @@
             </div>
         {% endblock %}
     <hr>
+        {% include 'common/flash_messages.html.twig' %}
         {% block body %}{% endblock %}
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}

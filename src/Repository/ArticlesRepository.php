@@ -19,32 +19,39 @@ class ArticlesRepository extends ServiceEntityRepository
         parent::__construct($registry, Articles::class);
     }
 
-    // /**
-    //  * @return Articles[] Returns an array of Articles objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function findBySort($arguments)
     {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('a.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $qb = $this->createQueryBuilder('a');
 
-    /*
-    public function findOneBySomeField($value): ?Articles
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        if (!empty($arguments['category'])) {
+            $qb->andWhere('a.category = :category')
+                ->setParameter('category', $arguments['category']);
+        }
+
+        if (!empty($arguments['user'])) {
+            $qb->andWhere('a.user = :user')
+                ->setParameter('user', $arguments['user']);
+        }
+
+        if (!empty($arguments['create_from'])) {
+            $qb->andWhere('a.create_date >= :from')
+                ->setParameter('from', $arguments['create_from'].' 00:00:01');
+        }
+
+        if (!empty($arguments['create_to'])) {
+            $qb->andWhere('a.create_date <= :to')
+                ->setParameter('to', $arguments['create_to'].' 23:59:59');
+        }
+
+        if (!empty($arguments['tag'])) {
+            $qb->join('a.tag', 't')
+                ->andWhere('t.id = :tag')
+                ->setParameter('tag', $arguments['tag']);
+        }
+
+        $qb->addOrderBy('a.id', 'ASC');
+        $query = $qb->getQuery();
+
+        return $query->execute();
     }
-    */
 }

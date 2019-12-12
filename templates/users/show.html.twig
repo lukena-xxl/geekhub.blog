@@ -12,7 +12,7 @@
         <div><strong>Дата регистрации:</strong> {{ user.registrationDate.format("d.m.Y H:i") }}</div>
     </div>
     <div class="mt-3">
-        <a class="btn btn-warning" href="{{ path('user_edit', {'id': user.id}) }}" role="button">Редактировать</a>
-        <a class="btn btn-danger" href="{{ path('user_delete', {'id': user.id}) }}" role="button">Удалить</a>
+        <a class="btn btn-warning" href="{{ path('user_edit', {'id': user.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+        <a class="btn btn-danger" href="{{ path('user_delete', {'id': user.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
     </div>
 {% endblock %}

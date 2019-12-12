@@ -18,4 +18,25 @@ class CategoriesRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Categories::class);
     }
+
+    public function findBySort($arguments)
+    {
+        $arrSymbol = [
+            'more' => '>',
+            'less' => '<',
+            'equally' => '='
+        ];
+
+        $qb = $this->createQueryBuilder('c');
+
+        if (!empty($arguments['num'])) {
+            $qb->andWhere('(SELECT COUNT(a.id) FROM App\Entity\Articles a WHERE a.category=c.id) ' . $arrSymbol[$arguments['symbol']] . ' :num')
+                ->setParameter('num', $arguments['num']);
+        }
+
+        $qb->addOrderBy('c.id', 'ASC');
+        $query = $qb->getQuery();
+
+        return $query->execute();
+    }
 }

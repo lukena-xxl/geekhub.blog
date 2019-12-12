@@ -4,12 +4,30 @@
 
 {% block body %}
     <h1>Все теги</h1>
+    <form method="get" class="my-3" action="{{ path('tag_show_all') }}">
+        <div>Теги
+            <label>
+                <select name="sort[article]" class="form-control">
+                    <option value="" class="text-muted">всех публикаций</option>
+                    {% if tags %}
+                        {% for article in articles %}
+                            <option value="{{ article.id }}"{% if arguments.article is defined %}{% if arguments.article == article.id %} selected{% endif %}{% endif %}>{{ article.title }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </label>
+            <label>
+                <button type="submit" class="btn btn-sm btn-secondary">Показать</button>
+            </label>
+        </div>
+    </form>
     {% if tags %}
     <table class="table mt-3">
         <tr>
             <th>ID</th>
             <th>Название</th>
             <th>Публикации</th>
+            <th>Действия</th>
         </tr>
         {% for tag in tags %}
             <tr>
@@ -17,9 +35,9 @@
                 <td>{{ tag.title }}</td>
                 <td>{{ tag.articles.count }}</td>
                 <td>
-                    <a class="btn btn-info" href="{{ path('tag_show', {'id': tag.id}) }}" role="button">Подробнее</a>
-                    <a class="btn btn-warning" href="{{ path('tag_edit', {'id': tag.id}) }}" role="button">Редактировать</a>
-                    <a class="btn btn-danger" href="{{ path('tag_delete', {'id': tag.id}) }}" role="button">Удалить</a>
+                    <a class="btn btn-info" href="{{ path('tag_show', {'id': tag.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
+                    <a class="btn btn-warning" href="{{ path('tag_edit', {'id': tag.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+                    <a class="btn btn-danger" href="{{ path('tag_delete', {'id': tag.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
                 </td>
             </tr>
         {% endfor %}
