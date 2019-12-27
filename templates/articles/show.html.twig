@@ -6,8 +6,12 @@
     <div class="row">
         <div class="col-sm-7">
             <h1>{{ article.title }}</h1>
-            <img src="{% if article.image %}/uploads/articles/{{ article.image }}{% else %}{{ asset('build/images/common/no-image.png') }}{% endif %}" class="img-fluid" alt="">
-            <div class="mt-3">{{ article.body }}</div>
+            <img src="{% if article.image %}{{ asset('uploads/articles/'~article.image) }}{% else %}{{ asset('build/images/common/no-image.png') }}{% endif %}" class="img-fluid">
+            <div class="mt-3 editor-content">
+                {% autoescape %}
+                    {{ article.body|raw }}
+                {% endautoescape %}
+            </div>
         </div>
         <div class="col-sm-5">
             <div class="p-2 bg-secondary text-white text-center">Технические данные</div>
@@ -90,4 +94,8 @@
             </div>
         </div>
     </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('ckeditor_parse_media') }}
 {% endblock %}

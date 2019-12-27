@@ -16,6 +16,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * Class ArticleController
@@ -109,13 +111,18 @@ class ArticleController extends AbstractController
         $form = $this->createForm(ArticleAddType::class, null, [
             'action' => $this->generateUrl('article_add'),
             'method' => 'post',
+            'attr' => [
+                'id' => 'article_form',
+                'data-article' => '',
+            ],
         ]);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
+            $response = [];
 
+            $formData = $form->getData();
             $datetime = new \DateTime();
 
             $article = new Articles();
@@ -158,15 +165,38 @@ class ArticleController extends AbstractController
                 }
             }
 
-            $entityManager->persist($article);
-            $entityManager->flush();
+            /** @var UploadedFile $file */
+            $file = $form['image']->getData();
 
-            $message = "Добавлена новая публикация \"" . $article->getTitle() . "\" в категорию \"" . $article->getCategory()->getTitle() . "\"";
-            $logger->info($message);
-            $updateManager->notifyOfUpdate($message);
-            $this->addFlash('success', $message);
+            if ($file) {
+                $newFilename = $this->getNewFileName($file);
 
-            return $this->redirectToRoute('article_show_all');
+                try {
+                    $file->move(
+                        $this->getParameter('article_image_dir'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    $response['error'] = $e->getMessage();
+                }
+
+                if (!isset($response['error'])) {
+                    $article->setImage($newFilename);
+
+                    $entityManager->persist($article);
+                    $entityManager->flush();
+
+                    $message = "Добавлена новая публикация \"" . $article->getTitle() . "\" в категорию \"" . $article->getCategory()->getTitle() . "\"";
+                    $logger->info($message);
+                    $updateManager->notifyOfUpdate($message);
+
+                    $response['id'] = $article->getId();
+                }
+            } else {
+                $response['error'] = "Выберите изображение!";
+            }
+
+            return $this->json(json_encode($response));
         }
 
         return $this->render('articles/add.html.twig', [
@@ -191,6 +221,10 @@ class ArticleController extends AbstractController
         $form = $this->createForm(ArticleAddType::class, $article, [
             'action' => $this->generateUrl('article_edit', ['id' => $article->getId()]),
             'method' => 'post',
+            'attr' => [
+                'id' => 'article_form',
+                'data-article' => $article->getId(),
+            ],
         ])->remove('create_date');
 
         $form->handleRequest($request);
@@ -199,16 +233,46 @@ class ArticleController extends AbstractController
             $formData = $form->getData();
             $article->setUpdateDate(new \DateTime());
 
-            $entityManager->persist($formData);
-            $entityManager->flush();
+            /** @var UploadedFile $file */
+            $file = $form['image']->getData();
 
-            $message = "Публикация была успешно изменена!";
-            $this->addFlash('success', $message);
+            if ($file) {
+                $newFilename = $this->getNewFileName($file);
+
+                try {
+                    $file->move(
+                        $this->getParameter('article_image_dir'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    $response['error'] = $e->getMessage();
+                }
+
+                if (!isset($response['error'])) {
+                    $old_file = $article->getImage();
+
+                    if (!empty($old_file)) {
+                        unlink($this->getParameter('article_image_dir') . "/" . $old_file);
+                    }
+
+                    $article->setImage($newFilename);
+                }
+            }
+
+            if (!isset($response['error'])) {
+                $entityManager->persist($formData);
+                $entityManager->flush();
+
+                $response['id'] = $article->getId();
+            }
+
+            return $this->json(json_encode($response));
         }
 
         return $this->render('articles/add.html.twig', [
             'controller_name' => 'ArticleController',
             'form_add' => $form->createView(),
+            'image' => $article->getImage(),
             'title' => 'Редактирование публикации "' . $article->getTitle() . '"',
         ]);
     }
@@ -258,5 +322,16 @@ class ArticleController extends AbstractController
         } else {
             return $article;
         }
+    }
+
+    /**
+     * @param $file
+     * @return string
+     */
+    private function getNewFileName($file)
+    {
+        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+        return $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
     }
 }
