@@ -3,16 +3,58 @@
 {% block title %}Категория "{{ category.title }}"{% endblock %}
 
 {% block body %}
-    <h1>Категория "{{ category.title }}"</h1>
-    <div class="mt-3">
-        <div><strong>ID:</strong> {{ category.id }}</div>
-        <div><strong>Название:</strong> {{ category.title }}</div>
-        <div><strong>Slug:</strong> {{ category.slug }}</div>
-        <div><strong>Описание:</strong> <div class="p-2 text-muted">{{ category.description }}</div></div>
-        <div><strong>Количетво статей:</strong> {{ category.articles.count }}</div>
-    </div>
-    <div class="mt-3">
-        <a class="btn btn-warning" href="{{ path('category_edit', {'id': category.id}) }}" role="button"><i class="fas fa-edit"></i></a>
-        <a class="btn btn-danger" href="{{ path('category_delete', {'id': category.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
+    <div class="row">
+        <div class="col-sm-7">
+            <h1>{{ category.title }}</h1>
+            <div class="mt-3">{{ category.description }}</div>
+        </div>
+        <div class="col-sm-5">
+            <div class="p-2 bg-secondary text-white text-center">Технические данные</div>
+            <ul class="list-group">
+                <li class="list-group-item rounded-0 text-white">
+                    {% if category.isVisible == 0 %}
+                        <span class="d-inline-block px-2 bg-danger">Отключена</span>
+                    {% else %}
+                        <span class="d-inline-block px-2 bg-success">Показывается</span>
+                    {% endif %}
+                </li>
+                <li class="list-group-item rounded-0"><strong>ID:</strong> {{ category.id }}</li>
+                <li class="list-group-item rounded-0"><strong>Slug:</strong> {{ category.slug }}</li>
+            </ul>
+            <div class="mt-2 p-2 bg-secondary text-white text-center">Связи</div>
+            <ul class="list-group">
+                <li class="list-group-item rounded-0">
+                    <strong>Публикации </strong><span class="text-muted small">(в категории):</span>
+                    <div class="mt-2">
+                        {% set users = {} %}
+                        {% if category.articles.count > 0 %}
+                            {% for article in category.articles %}
+                                <a href="{{ path('article_show', {'id': article.id}) }}" class="d-block m-1">{{ article.title }}</a>
+                                {% set users = users|merge({('u_'~article.user.id):(article.user)}) %}
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small">нет публикаций</span>
+                        {% endif %}
+                    </div>
+                </li>
+                <li class="list-group-item rounded-0">
+                    <strong>Пользователи </strong><span class="text-muted small">(сделавшие публикации в категории):</span>
+                    <div class="mt-2">
+                        {% if users %}
+                            {% for user in users %}
+                                <a href="{{ path('user_show', {'id': user.id}) }}" class="btn btn-light btn-sm rounded-0 m-1"><i class="fas fa-user mr-2"></i>{{ user.login }}</a>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small">нет пользователей</span>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+            <div class="mt-2 p-2 bg-secondary text-white text-center">Действия</div>
+            <div class="text-center px-2 py-3 border">
+                <a class="btn btn-warning" href="{{ path('category_edit', {'id': category.id}) }}" role="button"><i class="fas fa-edit mr-2"></i>Редактировать</a>
+                <a class="btn btn-danger" href="{{ path('category_delete', {'id': category.id}) }}" role="button"><i class="fas fa-trash-alt mr-2"></i>Удалить</a>
+            </div>
+        </div>
     </div>
 {% endblock %}

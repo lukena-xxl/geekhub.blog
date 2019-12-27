@@ -1,10 +1,10 @@
 <?php
 
-
 namespace App\Controller;
 
 use App\Entity\Categories;
-use App\Form\Categories\CategoryType;
+use App\Form\Categories\CategoryAddType;
+use App\Form\Categories\CategorySortType;
 use App\Repository\CategoriesRepository;
 use App\Services\UpdateManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,7 +13,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class CategoryController
@@ -30,15 +29,19 @@ class CategoryController extends AbstractController
      */
     public function showAllCategories(Request $request, CategoriesRepository $categoriesRepository)
     {
+        $form = $this->createForm(CategorySortType::class, null, [
+            'action' => $this->generateUrl('category_show_all'),
+            'method' => 'get',
+        ]);
+
+        $form->handleRequest($request);
         $arguments = [];
 
-        if ($request->query->has('sort')) {
-            $sorting = $request->query->get('sort');
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
 
-            if (!empty($sorting['num'])) {
-                $arguments['num'] = $sorting['num'];
-                $arguments['symbol'] = $sorting['symbol'];
-            }
+            $arguments['num'] = $formData['num'];
+            $arguments['symbol'] = $formData['symbol'];
         }
 
         if (count($arguments) > 0) {
@@ -50,7 +53,7 @@ class CategoryController extends AbstractController
         return $this->render('categories/show_all.html.twig', [
             'controller_name' => 'CategoryController',
             'categories' => $categories,
-            'arguments' => $arguments,
+            'form_sort' => $form->createView(),
         ]);
     }
 
@@ -63,7 +66,7 @@ class CategoryController extends AbstractController
     {
         return $this->render('categories/show.html.twig', [
             'controller_name' => 'CategoryController',
-            'category' => $this->getCategoryData($id),
+            'category' => $this->findCategory($id),
         ]);
     }
 
@@ -77,7 +80,11 @@ class CategoryController extends AbstractController
      */
     public function addCategory(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
-        $form = $this->createForm(CategoryType::class);
+        $form = $this->createForm(CategoryAddType::class, null, [
+            'action' => $this->generateUrl('category_add'),
+            'method' => 'post',
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -90,6 +97,9 @@ class CategoryController extends AbstractController
             if (!empty($formData['slug'])) {
                 $category->setSlug($formData['slug']);
             }
+
+            !empty($formData['is_visible']) ? $i = 1 : $i = 0;
+            $category->setIsVisible($i);
 
             $entityManager->persist($category);
             $entityManager->flush();
@@ -105,30 +115,55 @@ class CategoryController extends AbstractController
         return $this->render('categories/add.html.twig', [
             'controller_name' => 'CategoryController',
             'form_add' => $form->createView(),
+            'title' => 'Добавление категории',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
      * @param Request $request
-     * @param ValidatorInterface $validator
-     * @param UpdateManager $updateManager
+     * @param EntityManagerInterface $entityManager
      * @param $id
+     * @return Response
      */
-    public function editCategory(Request $request, ValidatorInterface $validator, UpdateManager $updateManager, $id)
+    public function editCategory(Request $request, EntityManagerInterface $entityManager, $id)
     {
+        $category = $this->findCategory($id);
 
+        $form = $this->createForm(CategoryAddType::class, $category, [
+            'action' => $this->generateUrl('category_edit', ['id' => $category->getId()]),
+            'method' => 'post',
+        ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $formData = $form->getData();
+
+            $entityManager->persist($formData);
+            $entityManager->flush();
+
+            $message = "Категория была спешно изменена!";
+            $this->addFlash('success', $message);
+        }
+
+        return $this->render('categories/add.html.twig', [
+            'controller_name' => 'CategoryController',
+            'form_add' => $form->createView(),
+            'title' => 'Редактирование категории "' . $category->getTitle() . '"',
+        ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
      * @param UpdateManager $updateManager
+     * @param LoggerInterface $logger
      * @param $id
      * @return Response
      */
-    public function deleteCategory(UpdateManager $updateManager, $id)
+    public function deleteCategory(UpdateManager $updateManager, LoggerInterface $logger, $id)
     {
-        $category = $this->getCategoryData($id);
+        $category = $this->findCategory($id);
 
         if ($category->getArticles()->count() > 0) {
             throw $this->createNotFoundException(
@@ -139,17 +174,20 @@ class CategoryController extends AbstractController
             $entityManager->remove($category);
             $entityManager->flush();
 
-            $message = "Категория с идентификатором \"" . $id . "\" была удалена!";
+            $message = "Категория \"" . $category->getTitle() . "\" была удалена";
+            $logger->info($message);
             $updateManager->notifyOfUpdate($message);
+            $this->addFlash('success', $message);
 
-            return $this->render('categories/access_delete.html.twig', [
-                'controller_name' => 'CategoryController',
-                'category' => $category,
-            ]);
+            return $this->redirectToRoute('category_show_all');
         }
     }
 
-    private function getCategoryData($id)
+    /**
+     * @param $id
+     * @return Categories
+     */
+    private function findCategory($id)
     {
         $entityManager = $this->getDoctrine()->getManager();
         $category = $entityManager->getRepository(Categories::class)->find($id);

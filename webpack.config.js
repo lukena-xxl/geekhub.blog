@@ -9,6 +9,17 @@ if (!Encore.isRuntimeEnvironmentConfigured()) {
 Encore
     // directory where compiled assets will be stored
     .setOutputPath('public/build/')
+
+    // enables hashed filenames (e.g. app.abc123.css)
+    .enableVersioning(Encore.isProduction())
+
+    .copyFiles({
+            from: './assets/images',
+            //to: 'images/[path][name].[ext]',
+            to: 'images/[path][name].[hash:8].[ext]',
+            pattern: /\.(png|jpg|jpeg)$/
+    })
+
     // public path used by the web server to access the output path
     .setPublicPath('/build')
     // only needed for CDN's or sub-directory deploy
@@ -44,8 +55,6 @@ Encore
     .cleanupOutputBeforeBuild()
     .enableBuildNotifications()
     .enableSourceMaps(!Encore.isProduction())
-    // enables hashed filenames (e.g. app.abc123.css)
-    .enableVersioning(Encore.isProduction())
 
     // enables @babel/preset-env polyfills
     .configureBabel(() => {}, {
