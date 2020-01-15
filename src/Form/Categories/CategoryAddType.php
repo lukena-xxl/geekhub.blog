@@ -35,6 +35,7 @@ class CategoryAddType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Введите описание',
                     'rows' => 10,
+                    'class' => 'editor',
                 ],
             ])
             ->add('is_visible', CheckboxType::class, [

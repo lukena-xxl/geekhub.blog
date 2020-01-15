@@ -1,8 +1,16 @@
 
 $danger: darken(#CD5C5C, 1%);
 
+$custom-file-text: (
+        en: "Browse",
+        uk: "Выбрать"
+);
+
 @import "~bootstrap/scss/bootstrap";
-@import '~@fortawesome/fontawesome-free/css/all.css';
+@import "~@fortawesome/fontawesome-free/css/all.css";
+@import "~jquery-confirm/css/jquery-confirm.css";
+
+@import '~cropperjs/dist/cropper.css';
 
 label {
   color: #F5871F;
@@ -20,4 +28,28 @@ select option[value=""] {
 
 table td {
   vertical-align: middle!important;
+}
+
+blockquote {
+  color: var(--gray)!important;
+  border-left: 5px solid #CCC!important;
+  font-style: italic;
+  padding: 10px 15px;
+  background-color: #EEE;
+}
+
+.editor-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+figcaption {
+  text-align: center;
+  caption-side: bottom;
+  word-break: break-word;
+  color: #333;
+  background-color: #f7f7f7;
+  padding: .6em;
+  font-size: .75em;
+  outline-offset: -1px;
 }
