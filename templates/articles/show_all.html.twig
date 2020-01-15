@@ -1,23 +1,23 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Публикации{% endblock %}
+{% block title %}Publications{% endblock %}
 
 {% block body %}
-    <a class="btn btn-success" href="{{ path('article_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Добавить публикацию</a>
+    <a class="btn btn-success" href="{{ path('article_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add post</a>
     <div class="mt-3">
         {{ form_start(form_sort) }}
         <div>
-            <div class="d-inline-block">Публикации</div>
+            <div class="d-inline-block">Publications</div>
             <div class="d-inline-block">{{ form_row(form_sort.user) }}</div>
-            <div class="d-inline-block">в</div>
+            <div class="d-inline-block">in</div>
             <div class="d-inline-block">{{ form_row(form_sort.category) }}</div>
-            <div class="d-inline-block">с</div>
+            <div class="d-inline-block">from</div>
             <div class="d-inline-block">{{ form_row(form_sort.tag) }}</div>
         </div>
         <div>
-            <div class="d-inline-block">созданные c</div>
+            <div class="d-inline-block">created</div>
             <div class="d-inline-block">{{ form_row(form_sort.from) }}</div>
-            <div class="d-inline-block">по</div>
+            <div class="d-inline-block">to</div>
             <div class="d-inline-block">{{ form_row(form_sort.to) }}</div>
             <div class="d-inline-block">{{ form_row(form_sort.submit) }}</div>
         </div>
@@ -27,18 +27,18 @@
     <table class="table">
         <tr>
             <th>ID</th>
-            <th>Изображение</th>
-            <th>Заголовок</th>
-            <th>Категория</th>
-            <th>Теги</th>
-            <th>Добавил</th>
-            <th>Создана</th>
-            <th style="min-width:250px">Действия</th>
+            <th>Picture</th>
+            <th>Heading</th>
+            <th>Category</th>
+            <th>Tags</th>
+            <th>Posted</th>
+            <th>Created</th>
+            <th class="min-width-actions">Actions</th>
         </tr>
         {% for article in articles %}
             <tr>
                 <td>{{ article.id }}</td>
-                <td style="max-width: 100px"><img src="{% if article.image %}{{ asset('uploads/articles/'~article.image) }}{% else %}{{ asset('build/images/common/no-image.png') }}{% endif %}" class="img-fluid"></td>
+                <td class="max-width-200"><img src="{% if article.image %}{{ asset('uploads/articles/'~article.image) }}{% else %}{{ asset('build/images/common/no-image.png') }}{% endif %}" class="img-fluid"></td>
                 <td {% if article.isVisible == 0 %}
                         class="text-danger"
                     {% else %}
@@ -60,6 +60,6 @@
         {% endfor %}
     </table>
     {% else %}
-        <p class="mt-3">Еще нет публикаций!</p>
+        <p class="mt-3">No posts yet!</p>
     {% endif %}
 {% endblock %}

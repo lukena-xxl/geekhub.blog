@@ -39,14 +39,14 @@ class StatusController extends AbstractController
 
     /**
      * @Route("/show/{id}", name="_show", requirements={"id"="\d+"})
-     * @param $id
+     * @param Statuses $status
      * @return Response
      */
-    public function showStatus($id)
+    public function showStatus(Statuses $status)
     {
         return $this->render('statuses/show.html.twig', [
             'controller_name' => 'StatusController',
-            'status' => $this->findStatus($id),
+            'status' => $status,
         ]);
     }
 
@@ -75,7 +75,7 @@ class StatusController extends AbstractController
             $entityManager->persist($status);
             $entityManager->flush();
 
-            $message = "Добавлен новый статус \"" . $status->getTitle() . "\"";
+            $message = "Added a new status of \"" . $status->getTitle() . "\"";
             $logger->info($message);
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
@@ -86,21 +86,19 @@ class StatusController extends AbstractController
         return $this->render('statuses/add.html.twig', [
             'controller_name' => 'StatusController',
             'form_add' => $form->createView(),
-            'title' => 'Добавление статуса',
+            'title' => 'Adding status',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
+     * @param Statuses $status
      * @param Request $request
      * @param EntityManagerInterface $entityManager
-     * @param $id
      * @return Response
      */
-    public function editStatus(Request $request, EntityManagerInterface $entityManager, $id)
+    public function editStatus(Statuses $status, Request $request, EntityManagerInterface $entityManager)
     {
-        $status = $this->findStatus($id);
-
         $form = $this->createForm(StatusAddType::class, $status, [
             'action' => $this->generateUrl('status_edit', ['id' => $status->getId()]),
             'method' => 'post',
@@ -114,60 +112,40 @@ class StatusController extends AbstractController
             $entityManager->persist($formData);
             $entityManager->flush();
 
-            $message = "Статус был успешно изменен!";
+            $message = "Status has been successfully changed!";
             $this->addFlash('success', $message);
         }
 
         return $this->render('statuses/add.html.twig', [
             'controller_name' => 'StatusController',
             'form_add' => $form->createView(),
-            'title' => 'Редактирование статуса "' . $status->getTitle() . '"',
+            'title' => 'Editing the status "' . $status->getTitle() . '"',
         ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
+     * @param Statuses $status
      * @param UpdateManager $updateManager
      * @param LoggerInterface $logger
-     * @param $id
      * @return Response
      */
-    public function deleteStatus(UpdateManager $updateManager, LoggerInterface $logger, $id)
+    public function deleteStatus(Statuses $status, UpdateManager $updateManager, LoggerInterface $logger)
     {
-        $status = $this->findStatus($id);
-
         if ($status->getUsers()->count() > 0) {
-            throw $this->createNotFoundException(
-                'К статусу привязаны некоторые пользователи. Уберите привязку и повторите попытку удаления!'
-            );
+            $this->addFlash('warning', 'Some users have this status. Define a different status for them and try to delete again!');
+            return $this->redirectToRoute('status_show', ['id' => $status->getId()]);
         } else {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($status);
             $entityManager->flush();
 
-            $message = "Статус \"" . $status->getTitle() . "\" был удален";
+            $message = "The status \"" . $status->getTitle() . "\" has been deleted";
             $logger->info($message);
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
             return $this->redirectToRoute('status_show_all');
-        }
-    }
-
-    /**
-     * @param $id
-     * @return Statuses
-     */
-    private function findStatus($id)
-    {
-        $entityManager = $this->getDoctrine()->getManager();
-        $status = $entityManager->getRepository(Statuses::class)->find($id);
-        if (!$status) {
-            throw $this->createNotFoundException(
-                'Статус с идентификатором "' . $id . '" не найден!'
-            );
-        } else {
-            return $status;
         }
     }
 }

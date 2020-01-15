@@ -58,14 +58,14 @@ class TagController extends AbstractController
 
     /**
      * @Route("/show/{id}", name="_show", requirements={"id"="\d+"})
-     * @param $id
+     * @param Tags $tag
      * @return Response
      */
-    public function showTag($id)
+    public function showTag(Tags $tag)
     {
         return $this->render('tags/show.html.twig', [
             'controller_name' => 'TagController',
-            'tag' => $this->findTag($id),
+            'tag' => $tag,
         ]);
     }
 
@@ -102,7 +102,7 @@ class TagController extends AbstractController
             $entityManager->persist($tag);
             $entityManager->flush();
 
-            $message = "Добавлен новый тег \"" . $tag->getTitle() . "\"";
+            $message = "Added a new tag \"" . $tag->getTitle() . "\"";
             $logger->info($message);
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
@@ -113,21 +113,19 @@ class TagController extends AbstractController
         return $this->render('tags/add.html.twig', [
             'controller_name' => 'TagController',
             'form_add' => $form->createView(),
-            'title' => 'Добавление тега',
+            'title' => 'Adding a tag',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
+     * @param Tags $tag
      * @param Request $request
      * @param EntityManagerInterface $entityManager
-     * @param $id
      * @return Response
      */
-    public function editTag(Request $request, EntityManagerInterface $entityManager, $id)
+    public function editTag(Tags $tag, Request $request, EntityManagerInterface $entityManager)
     {
-        $tag = $this->findTag($id);
-
         $form = $this->createForm(TagAddType::class, $tag, [
             'action' => $this->generateUrl('tag_edit', ['id' => $tag->getId()]),
             'method' => 'post',
@@ -141,28 +139,26 @@ class TagController extends AbstractController
             $entityManager->persist($formData);
             $entityManager->flush();
 
-            $message = "Тег был успешно изменен!";
+            $message = "The tag has been successfully modified!";
             $this->addFlash('success', $message);
         }
 
         return $this->render('tags/add.html.twig', [
             'controller_name' => 'TagController',
             'form_add' => $form->createView(),
-            'title' => 'Редактирование тега "' . $tag->getTitle() . '"',
+            'title' => 'Editing the tag "' . $tag->getTitle() . '"',
         ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
+     * @param Tags $tag
      * @param UpdateManager $updateManager
      * @param LoggerInterface $logger
-     * @param $id
      * @return Response
      */
-    public function deleteTag(UpdateManager $updateManager, LoggerInterface $logger, $id)
+    public function deleteTag(Tags $tag, UpdateManager $updateManager, LoggerInterface $logger)
     {
-        $tag = $this->findTag($id);
-
         $articlesCollection = $tag->getArticles();
         if ($articlesCollection) {
             foreach ($articlesCollection as $article) {
@@ -174,28 +170,11 @@ class TagController extends AbstractController
         $entityManager->remove($tag);
         $entityManager->flush();
 
-        $message = "Тег \"" . $tag->getTitle() . "\" был удален";
+        $message = "The tag \"" . $tag->getTitle() . "\" has been removed";
         $logger->info($message);
         $updateManager->notifyOfUpdate($message);
         $this->addFlash('success', $message);
 
         return $this->redirectToRoute('tag_show_all');
-    }
-
-    /**
-     * @param $id
-     * @return Tags
-     */
-    private function findTag($id)
-    {
-        $entityManager = $this->getDoctrine()->getManager();
-        $tag = $entityManager->getRepository(Tags::class)->find($id);
-        if (!$tag) {
-            throw $this->createNotFoundException(
-                'Тег с идентификатором "' . $id . '" не найден!'
-            );
-        } else {
-            return $tag;
-        }
     }
 }

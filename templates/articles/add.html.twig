@@ -6,7 +6,7 @@
 {% endblock %}
 {% block body %}
     <h1>{{ title }}</h1>
-    <div class="mt-3 form-content" style="max-width:700px">
+    <div class="mt-3 form-content">
         {{ form_start(form_add) }}
         <fieldset>
             {{ form_row(form_add.title) }}
@@ -16,7 +16,7 @@
             {{ form_row(form_add.user) }}
             {{ form_row(form_add.body) }}
             {{ form_row(form_add.image) }}
-            <div class="my-2" style="max-width: 500px">
+            <div class="my-2">
                 <div id="selected_image">
                     {% if image is defined %}
                         <img src="{{ asset('uploads/articles/'~image) }}" alt="" id="old_image" class="img-fluid">

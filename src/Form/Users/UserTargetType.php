@@ -27,11 +27,11 @@ class UserTargetType extends AbstractType
                 'label' => false,
                 'class' => Users::class,
                 'choice_label' => 'login',
-                'placeholder' => 'выбрать',
+                'placeholder' => 'choose',
                 'data' => $this->repository->findOneBy(['target' => 1])
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Выбрать',
+                'label' => 'Select',
                 'attr' => [
                     'class' => 'btn-secondary btn-sm',
                 ],

@@ -16,24 +16,24 @@ class CategoryAddType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Нзвание категории',
+                'label' => 'Title',
                 'attr' => [
-                    'placeholder' => 'Введите название',
+                    'placeholder' => 'Enter a title',
                 ],
             ])
             ->add('slug', TextType::class, [
                 'required' => false,
-                'label' => 'Slug категории',
-                'help' => 'Разрешены символы: [a-z] _ -',
+                'label' => 'Slug',
+                'help' => 'Characters allowed: [a-z] _ -',
                 'attr' => [
-                    'placeholder' => 'Введите slug',
+                    'placeholder' => 'Enter a slug',
                 ],
             ])
             ->add('description', TextareaType::class, [
                 'required' => false,
-                'label' => 'Описание категории',
+                'label' => 'Description',
                 'attr' => [
-                    'placeholder' => 'Введите описание',
+                    'placeholder' => 'Enter a description',
                     'rows' => 10,
                     'class' => 'editor',
                 ],
@@ -41,13 +41,13 @@ class CategoryAddType extends AbstractType
             ->add('is_visible', CheckboxType::class, [
                 'required' => false,
                 'value' => 1,
-                'label' => 'Включена/Отключена',
+                'label' => 'Enabled / Disabled',
                 'label_attr' => [
                     'class' => 'font-weight-normal text-dark',
                 ],
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Сохранить',
+                'label' => 'Save',
                 'attr' => [
                     'class' => 'btn-success',
                 ],

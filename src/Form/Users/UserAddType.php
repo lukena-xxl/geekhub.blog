@@ -3,6 +3,7 @@
 namespace App\Form\Users;
 
 use App\Entity\Statuses;
+use App\Entity\Users;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
@@ -20,45 +21,45 @@ class UserAddType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'required' => false,
-                'label' => 'Имя',
+                'label' => 'Name',
                 'attr' => [
-                    'placeholder' => 'Введите имя',
+                    'placeholder' => 'Enter a name',
                 ],
             ])
             ->add('login', TextType::class, [
-                'label' => 'Логин',
+                'label' => 'Login',
                 'attr' => [
-                    'placeholder' => 'Введите логин',
+                    'placeholder' => 'Enter a login',
                 ],
             ])
             ->add('password', PasswordType::class, [
-                'label' => 'Пароль',
-                'help' => 'Пароль должен содержать цифры и буквы',
+                'label' => 'Password',
+                'help' => 'Password must contain numbers and letters',
                 'attr' => [
-                    'placeholder' => 'Введите пароль',
+                    'placeholder' => 'Enter a password',
                 ],
             ])
             ->add('status', EntityType::class, [
-                'label' => 'Статус пользователя',
+                'label' => 'Status',
                 'class' => Statuses::class,
                 'choice_label' => 'title',
             ])
             ->add('gender', ChoiceType::class, [
                 'required' => false,
-                'label' => 'Пол',
+                'label' => 'Gender',
                 'choices' => [
-                    'я мужчина' => 'male',
-                    'я женщина' => 'female'
+                    'I\'m a man' => 'male',
+                    'I am a woman' => 'female'
                 ],
-                'placeholder' => 'выберите пол',
+                'placeholder' => 'choose gender',
             ])
             ->add('birth_date', BirthdayType::class, [
                 'required' => false,
                 'widget' => 'single_text',
-                'label' => 'Дата рождения',
+                'label' => 'Birth date',
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Сохранить',
+                'label' => 'Save',
                 'attr' => [
                     'class' => 'btn-success',
                 ],

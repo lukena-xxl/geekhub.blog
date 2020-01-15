@@ -27,13 +27,13 @@ class CategorySortType extends AbstractType
             ->add('symbol', ChoiceType::class, [
                 'label' => false,
                 'choices' => [
-                    'больше' => 'more',
-                    'меньше' => 'less',
-                    'ровно' => 'equally'
+                    'more' => 'more',
+                    'less' => 'less',
+                    'equally' => 'equally'
                 ],
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Показать',
+                'label' => 'Show',
                 'attr' => [
                     'class' => 'btn-secondary btn-sm',
                 ],

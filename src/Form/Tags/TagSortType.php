@@ -17,12 +17,12 @@ class TagSortType extends AbstractType
             ->add('article', EntityType::class, [
                 'required' => false,
                 'label' => false,
-                'placeholder' => 'всех публикаций',
+                'placeholder' => 'all publications',
                 'class' => Articles::class,
                 'choice_label' => 'title',
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Показать',
+                'label' => 'Show',
                 'attr' => [
                     'class' => 'btn-secondary btn-sm',
                 ],

@@ -45,24 +45,19 @@ class ArticleController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $formData = $form->getData();
 
-            if (!empty($formData['user'])) {
-                $arguments['user'] = $formData['user'];
-            }
+            $arrArg = ['user', 'category', 'tag', 'from', 'to'];
 
-            if (!empty($formData['category'])) {
-                $arguments['category'] = $formData['category'];
-            }
+            foreach ($arrArg as $arg) {
+                if (!empty($formData[$arg])) {
 
-            if (!empty($formData['tag'])) {
-                $arguments['tag'] = $formData['tag'];
-            }
+                    $value = $formData[$arg];
 
-            if (!empty($formData['from'])) {
-                $arguments['create_from'] = $formData['from'];
-            }
+                    if ($arg == 'to') {
+                        $value = $formData[$arg]->setTime(23, 59, 59);
+                    }
 
-            if (!empty($formData['to'])) {
-                $arguments['create_to'] = $formData['to']->setTime(23, 59, 59);
+                    $arguments[$arg] = $value;
+                }
             }
         }
 
@@ -86,14 +81,14 @@ class ArticleController extends AbstractController
 
     /**
      * @Route("/show/{id}", name="_show", requirements={"id"="\d+"})
-     * @param $id
+     * @param Articles $article
      * @return Response
      */
-    public function showArticle($id)
+    public function showArticle(Articles $article)
     {
         return $this->render('articles/show.html.twig', [
             'controller_name' => 'ArticleController',
-            'article' => $this->findArticle($id),
+            'article' => $article,
         ]);
     }
 
@@ -128,10 +123,7 @@ class ArticleController extends AbstractController
             $article = new Articles();
             $article->setTitle($formData['title']);
             $article->setBody($formData['body']);
-
-            //$article->setCreateDate($datetime);
             $article->setCreateDate($formData['create_date']);
-
             $article->setUpdateDate($datetime);
 
             if(!empty($formData['go_on_public'])) {
@@ -186,14 +178,14 @@ class ArticleController extends AbstractController
                     $entityManager->persist($article);
                     $entityManager->flush();
 
-                    $message = "Добавлена новая публикация \"" . $article->getTitle() . "\" в категорию \"" . $article->getCategory()->getTitle() . "\"";
+                    $message = "Added new publication \"" . $article->getTitle() . "\" in the category \"" . $article->getCategory()->getTitle() . "\"";
                     $logger->info($message);
                     $updateManager->notifyOfUpdate($message);
 
                     $response['id'] = $article->getId();
                 }
             } else {
-                $response['error'] = "Выберите изображение!";
+                $response['error'] = "Choose an image";
             }
 
             return $this->json(json_encode($response));
@@ -202,22 +194,20 @@ class ArticleController extends AbstractController
         return $this->render('articles/add.html.twig', [
             'controller_name' => 'ArticleController',
             'form_add' => $form->createView(),
-            'title' => 'Добавление публикации',
+            'title' => 'Adding a publication',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
+     * @param Articles $article
      * @param Request $request
      * @param EntityManagerInterface $entityManager
-     * @param $id
      * @return Response
      * @throws Exception
      */
-    public function editArticle(Request $request, EntityManagerInterface $entityManager, $id)
+    public function editArticle(Articles $article, Request $request, EntityManagerInterface $entityManager)
     {
-        $article = $this->findArticle($id);
-
         $form = $this->createForm(ArticleAddType::class, $article, [
             'action' => $this->generateUrl('article_edit', ['id' => $article->getId()]),
             'method' => 'post',
@@ -251,7 +241,7 @@ class ArticleController extends AbstractController
                 if (!isset($response['error'])) {
                     $old_file = $article->getImage();
 
-                    if (!empty($old_file)) {
+                    if (!empty($old_file) && file_exists($this->getParameter('article_image_dir') . "/" . $old_file)) {
                         unlink($this->getParameter('article_image_dir') . "/" . $old_file);
                     }
 
@@ -273,21 +263,19 @@ class ArticleController extends AbstractController
             'controller_name' => 'ArticleController',
             'form_add' => $form->createView(),
             'image' => $article->getImage(),
-            'title' => 'Редактирование публикации "' . $article->getTitle() . '"',
+            'title' => 'Editing the publication "' . $article->getTitle() . '"',
         ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
+     * @param Articles $article
      * @param UpdateManager $updateManager
      * @param LoggerInterface $logger
-     * @param $id
      * @return Response
      */
-    public function deleteArticle(UpdateManager $updateManager, LoggerInterface $logger, $id)
+    public function deleteArticle(Articles $article, UpdateManager $updateManager, LoggerInterface $logger)
     {
-        $article = $this->findArticle($id);
-
         $assignedTags = $article->getTag();
         if ($assignedTags) {
             foreach ($assignedTags as $assignedTag) {
@@ -299,29 +287,12 @@ class ArticleController extends AbstractController
         $entityManager->remove($article);
         $entityManager->flush();
 
-        $message = "Публикация \"" . $article->getTitle() . "\" была удалена";
+        $message = "Publication \"" . $article->getTitle() . "\" has been deleted";
         $logger->info($message);
         $updateManager->notifyOfUpdate($message);
         $this->addFlash('success', $message);
 
         return $this->redirectToRoute('article_show_all');
-    }
-
-    /**
-     * @param $id
-     * @return Articles
-     */
-    private function findArticle($id)
-    {
-        $entityManager = $this->getDoctrine()->getManager();
-        $article = $entityManager->getRepository(Articles::class)->find($id);
-        if (!$article) {
-            throw $this->createNotFoundException(
-                'Публикация с идентификатором "' . $id . '" не найдена!'
-            );
-        } else {
-            return $article;
-        }
     }
 
     /**

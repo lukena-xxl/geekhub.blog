@@ -33,14 +33,14 @@ class ArticlesRepository extends ServiceEntityRepository
                 ->setParameter('user', $arguments['user']);
         }
 
-        if (!empty($arguments['create_from'])) {
+        if (!empty($arguments['from'])) {
             $qb->andWhere('a.create_date >= :from')
-                ->setParameter('from', $arguments['create_from']);
+                ->setParameter('from', $arguments['from']);
         }
 
-        if (!empty($arguments['create_to'])) {
+        if (!empty($arguments['to'])) {
             $qb->andWhere('a.create_date <= :to')
-                ->setParameter('to', $arguments['create_to']);
+                ->setParameter('to', $arguments['to']);
         }
 
         if (!empty($arguments['tag'])) {

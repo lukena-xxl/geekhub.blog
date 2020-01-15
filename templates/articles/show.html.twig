@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Публикация "{{ article.title }}"{% endblock %}
+{% block title %}Publication "{{ article.title }}"{% endblock %}
 
 {% block body %}
     <div class="row">
@@ -14,83 +14,83 @@
             </div>
         </div>
         <div class="col-sm-5">
-            <div class="p-2 bg-secondary text-white text-center">Технические данные</div>
+            <div class="p-2 bg-secondary text-white text-center">Technical details</div>
             <ul class="list-group">
                 <li class="list-group-item rounded-0 text-white">
                     {% if article.goOnPublic %}
                         {% set differencePublic = article.goOnPublic.diff(date()) %}
                     {% endif %}
                     {% if article.isVisible == 0 %}
-                        <span class="d-inline-block px-2 bg-danger">Отключена</span>
+                        <span class="d-inline-block px-2 bg-danger">Disabled</span>
                     {% else %}
                         {% if differencePublic is defined and differencePublic.format('U') > 0 %}
-                            <span class="d-inline-block px-2 bg-warning">Ожидается показ</span>
-                            <div class="text-muted mt-2">Запланирован показ с {{ article.goOnPublic.format("d.m.Y H:i") }}</div>
+                            <span class="d-inline-block px-2 bg-warning">Display expected</span>
+                            <div class="text-muted mt-2">Scheduled to display from {{ article.goOnPublic.format("d.m.Y H:i") }}</div>
                         {% else %}
-                            <span class="d-inline-block px-2 bg-success">Показывается</span>
+                            <span class="d-inline-block px-2 bg-success">Is shown</span>
                         {% endif %}
                     {% endif %}
                 </li>
                 <li class="list-group-item rounded-0"><strong>ID:</strong> {{ article.id }}</li>
                 <li class="list-group-item rounded-0"><strong>Slug:</strong> {{ article.slug }}</li>
-                <li class="list-group-item rounded-0"><strong>Создана</strong> {{ article.createDate.format("d.m.Y H:i") }}</li>
+                <li class="list-group-item rounded-0"><strong>Created by</strong> {{ article.createDate.format("d.m.Y H:i") }}</li>
                 <li class="list-group-item rounded-0">
-                    <strong>Изменена</strong>
+                    <strong>Changed</strong>
                     <span class="text-info">
-                        <span class="text-muted">более</span>
+                        <span class="text-muted">more</span>
                         {% set difference = article.updateDate.diff(date()) %}
                         <strong>{% if difference.format('%Y') > 0 %}
-                            {{ difference.format('%Y') }} года
+                            {{ difference.format('%Y') }} years
                         {% elseif difference.format('%m') > 0 %}
-                            {{ difference.format('%m') }} месяцев
+                            {{ difference.format('%m') }} months
                         {% elseif difference.format('%a') > 0 %}
-                            {{ difference.format('%a') }} дней
+                            {{ difference.format('%a') }} days
                         {% elseif difference.format('%h') > 0 %}
-                            {{ difference.format('%h') }} часов
+                            {{ difference.format('%h') }} hours
                         {% elseif difference.format('%i') > 0 %}
-                            {{ difference.format('%i') }} минут
+                            {{ difference.format('%i') }} minutes
                         {% elseif difference.format('%s') > 0 %}
-                            {{ difference.format('%s') }} секунд
-                        {% endif %} назад</strong>
+                            {{ difference.format('%s') }} seconds
+                        {% endif %} ago</strong>
                         <span class="text-muted"> / {{ article.updateDate.format("d.m.Y H:i") }}</span>
                     </span>
                 </li>
             </ul>
-            <div class="mt-2 p-2 bg-secondary text-white text-center">Связи</div>
+            <div class="mt-2 p-2 bg-secondary text-white text-center">Communication</div>
             <ul class="list-group">
                 <li class="list-group-item rounded-0">
-                    <strong>Пользователь:</strong>
+                    <strong>User:</strong>
                     <a href="{{ path('user_show', {'id': article.user.id}) }}" class="btn btn-light btn-sm rounded-0"><i class="fas fa-user-cog mr-2"></i>{{ article.user.login }}</a>
                 </li>
                 <li class="list-group-item rounded-0">
-                    <strong>Категория:</strong>
+                    <strong>Category:</strong>
                     <a href="{{ path('category_show', {'id': article.category.id}) }}" class="btn btn-light btn-sm rounded-0"><i class="fas fa-flag mr-2"></i>{{ article.category.title }}</a>
                 </li>
                 <li class="list-group-item rounded-0">
-                    <strong>Теги:</strong>
+                    <strong>Tags:</strong>
                     {% if article.tag.count > 0 %}
                         {% for tag in article.tag %}
                             <a href="{{ path('tag_show', {'id': tag.id}) }}" class="btn btn-light btn-sm rounded-0 m-1"><i class="fas fa-tag mr-2"></i>{{ tag.title }}</a>
                         {% endfor %}
                     {% else %}
-                        <span class="text-muted small">нет тегов</span>
+                        <span class="text-muted small">no tags</span>
                     {% endif %}
                 </li>
                 <li class="list-group-item rounded-0">
-                    <strong>В избранном у:</strong>
+                    <strong>Favorited by:</strong>
                     {% if article.inFavorites.count > 0 %}
                         {% for user in article.inFavorites %}
                             <a href="{{ path('user_show', {'id': user.id}) }}" class="btn btn-light btn-sm rounded-0 m-1"><i class="fas fa-user mr-2"></i>{{ user.login }}</a>
                         {% endfor %}
                     {% else %}
-                        <span class="text-muted small">нет в избранных</span>
+                        <span class="text-muted small">not in favorites</span>
                     {% endif %}
                 </li>
             </ul>
-            <div class="mt-2 p-2 bg-secondary text-white text-center">Действия</div>
+            <div class="mt-2 p-2 bg-secondary text-white text-center">Actions</div>
             <div class="text-center px-2 py-3 border">
-                <a class="btn btn-warning" href="{{ path('article_edit', {'id': article.id}) }}" role="button"><i class="fas fa-edit mr-2"></i>Редактировать</a>
-                <a class="btn btn-danger" href="{{ path('article_delete', {'id': article.id}) }}" role="button"><i class="fas fa-trash-alt mr-2"></i>Удалить</a>
+                <a class="btn btn-warning" href="{{ path('article_edit', {'id': article.id}) }}" role="button"><i class="fas fa-edit mr-2"></i>Edit</a>
+                <a class="btn btn-danger" href="{{ path('article_delete', {'id': article.id}) }}" role="button"><i class="fas fa-trash-alt mr-2"></i>Delete</a>
             </div>
         </div>
     </div>
