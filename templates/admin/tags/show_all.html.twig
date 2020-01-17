@@ -1,9 +1,9 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
 {% block title %}Tags{% endblock %}
 
 {% block body %}
-    <a class="btn btn-success" href="{{ path('tag_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add tag</a>
+    <a class="btn btn-success" href="{{ path('admin_tag_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add tag</a>
     <div class="my-3">
         {{ form_start(form_sort) }}
         <div class="d-inline-block">Tags</div>
@@ -29,9 +29,9 @@
                     {% endif %}>{{ tag.title }}</td>
                 <td>{{ tag.articles.count }}</td>
                 <td>
-                    <a class="btn btn-info" href="{{ path('tag_show', {'id': tag.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
-                    <a class="btn btn-warning" href="{{ path('tag_edit', {'id': tag.id}) }}" role="button"><i class="fas fa-edit"></i></a>
-                    <a class="btn btn-danger" href="{{ path('tag_delete', {'id': tag.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
+                    <a class="btn btn-info" href="{{ path('admin_tag_show', {'id': tag.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
+                    <a class="btn btn-warning" href="{{ path('admin_tag_edit', {'id': tag.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+                    <a class="btn btn-danger" href="{{ path('admin_tag_delete', {'id': tag.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
                 </td>
             </tr>
         {% endfor %}

@@ -1,9 +1,9 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
 {% block title %}Users{% endblock %}
 
 {% block body %}
-    <div class="d-inline-block mr-3"><a class="btn btn-success" href="{{ path('user_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add user</a></div>
+    <div class="d-inline-block mr-3"><a class="btn btn-success" href="{{ path('admin_user_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add user</a></div>
     <div class="d-inline-block">
         {{ form_start(form_target) }}
         <div class="d-inline-block">Current user:</div>
@@ -43,11 +43,11 @@
                     <td>{{ user.articles.count }}</td>
                     <td>
                         {% if target_user %}
-                        <a class="btn btn-{% if user in target_user.favoriteUsers %}success{% else %}light{% endif %} mb-1" href="{{ path('favorite_users', {'id': user.id}) }}" role="button"><i class="far fa-star"></i></a>
+                        <a class="btn btn-{% if user in target_user.favoriteUsers %}success{% else %}light{% endif %} mb-1" href="{{ path('admin_favorite_users', {'id': user.id}) }}" role="button"><i class="far fa-star"></i></a>
                         {% endif %}
-                        <a class="btn btn-info mb-1" href="{{ path('user_show', {'id': user.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
-                        <a class="btn btn-warning mb-1" href="{{ path('user_edit', {'id': user.id}) }}" role="button"><i class="fas fa-edit"></i></a>
-                        <a class="btn btn-danger mb-1" href="{{ path('user_delete', {'id': user.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
+                        <a class="btn btn-info mb-1" href="{{ path('admin_user_show', {'id': user.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
+                        <a class="btn btn-warning mb-1" href="{{ path('admin_user_edit', {'id': user.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+                        <a class="btn btn-danger mb-1" href="{{ path('admin_user_delete', {'id': user.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
                     </td>
                 </tr>
             {% endfor %}

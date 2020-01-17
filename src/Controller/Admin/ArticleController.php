@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Admin\Controller;
+namespace App\Controller\Admin;
 
 use App\Entity\Articles;
 use App\Entity\Categories;

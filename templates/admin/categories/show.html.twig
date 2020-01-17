@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
 {% block title %}Category "{{ category.title }}"{% endblock %}
 
@@ -33,7 +33,7 @@
                         {% set users = {} %}
                         {% if category.articles.count > 0 %}
                             {% for article in category.articles %}
-                                <a href="{{ path('article_show', {'id': article.id}) }}" class="d-block m-1">{{ article.title }}</a>
+                                <a href="{{ path('admin_article_show', {'id': article.id}) }}" class="d-block m-1">{{ article.title }}</a>
                                 {% set users = users|merge({('u_'~article.user.id):(article.user)}) %}
                             {% endfor %}
                         {% else %}
@@ -46,7 +46,7 @@
                     <div class="mt-2">
                         {% if users %}
                             {% for user in users %}
-                                <a href="{{ path('user_show', {'id': user.id}) }}" class="btn btn-light btn-sm rounded-0 m-1"><i class="fas fa-user mr-2"></i>{{ user.login }}</a>
+                                <a href="{{ path('admin_user_show', {'id': user.id}) }}" class="btn btn-light btn-sm rounded-0 m-1"><i class="fas fa-user mr-2"></i>{{ user.login }}</a>
                             {% endfor %}
                         {% else %}
                             <span class="text-muted small">no users</span>
@@ -56,8 +56,8 @@
             </ul>
             <div class="mt-2 p-2 bg-secondary text-white text-center">Actions</div>
             <div class="text-center px-2 py-3 border">
-                <a class="btn btn-warning" href="{{ path('category_edit', {'id': category.id}) }}" role="button"><i class="fas fa-edit mr-2"></i>Edit</a>
-                <a class="btn btn-danger" href="{{ path('category_delete', {'id': category.id}) }}" role="button"><i class="fas fa-trash-alt mr-2"></i>Delete</a>
+                <a class="btn btn-warning" href="{{ path('admin_category_edit', {'id': category.id}) }}" role="button"><i class="fas fa-edit mr-2"></i>Edit</a>
+                <a class="btn btn-danger" href="{{ path('admin_category_delete', {'id': category.id}) }}" role="button"><i class="fas fa-trash-alt mr-2"></i>Delete</a>
             </div>
         </div>
     </div>

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Admin;
 
 use App\Entity\Tags;
 use App\Form\Tags\TagAddType;
@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class TagController
  * @package App\Controller
- * @Route("/tag", name="tag")
+ * @Route("/admin/tag", name="admin_tag")
  */
 class TagController extends AbstractController
 {
@@ -30,7 +30,7 @@ class TagController extends AbstractController
     public function showAllTags(Request $request, TagsRepository $tagsRepository)
     {
         $form = $this->createForm(TagSortType::class, null, [
-            'action' => $this->generateUrl('tag_show_all'),
+            'action' => $this->generateUrl('admin_tag_show_all'),
             'method' => 'get',
         ]);
 
@@ -49,7 +49,7 @@ class TagController extends AbstractController
             $tags = $tagsRepository->findAll();
         }
 
-        return $this->render('tags/show_all.html.twig', [
+        return $this->render('admin/tags/show_all.html.twig', [
             'controller_name' => 'TagController',
             'tags' => $tags,
             'form_sort' => $form->createView(),
@@ -63,7 +63,7 @@ class TagController extends AbstractController
      */
     public function showTag(Tags $tag)
     {
-        return $this->render('tags/show.html.twig', [
+        return $this->render('admin/tags/show.html.twig', [
             'controller_name' => 'TagController',
             'tag' => $tag,
         ]);
@@ -80,7 +80,7 @@ class TagController extends AbstractController
     public function addTags(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
         $form = $this->createForm(TagAddType::class, null, [
-            'action' => $this->generateUrl('tag_add'),
+            'action' => $this->generateUrl('admin_tag_add'),
             'method' => 'post',
         ]);
 
@@ -107,10 +107,10 @@ class TagController extends AbstractController
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
-            return $this->redirectToRoute('tag_show_all');
+            return $this->redirectToRoute('admin_tag_show_all');
         }
 
-        return $this->render('tags/add.html.twig', [
+        return $this->render('admin/tags/add.html.twig', [
             'controller_name' => 'TagController',
             'form_add' => $form->createView(),
             'title' => 'Adding a tag',
@@ -127,7 +127,7 @@ class TagController extends AbstractController
     public function editTag(Tags $tag, Request $request, EntityManagerInterface $entityManager)
     {
         $form = $this->createForm(TagAddType::class, $tag, [
-            'action' => $this->generateUrl('tag_edit', ['id' => $tag->getId()]),
+            'action' => $this->generateUrl('admin_tag_edit', ['id' => $tag->getId()]),
             'method' => 'post',
         ]);
 
@@ -143,7 +143,7 @@ class TagController extends AbstractController
             $this->addFlash('success', $message);
         }
 
-        return $this->render('tags/add.html.twig', [
+        return $this->render('admin/tags/add.html.twig', [
             'controller_name' => 'TagController',
             'form_add' => $form->createView(),
             'title' => 'Editing the tag "' . $tag->getTitle() . '"',
@@ -175,6 +175,6 @@ class TagController extends AbstractController
         $updateManager->notifyOfUpdate($message);
         $this->addFlash('success', $message);
 
-        return $this->redirectToRoute('tag_show_all');
+        return $this->redirectToRoute('admin_tag_show_all');
     }
 }

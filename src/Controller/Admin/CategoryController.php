@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Admin;
 
 use App\Entity\Categories;
 use App\Form\Categories\CategoryAddType;
@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class CategoryController
  * @package App\Controller
- * @Route("/category", name="category")
+ * @Route("/admin/category", name="admin_category")
  */
 class CategoryController extends AbstractController
 {
@@ -30,7 +30,7 @@ class CategoryController extends AbstractController
     public function showAllCategories(Request $request, CategoriesRepository $categoriesRepository)
     {
         $form = $this->createForm(CategorySortType::class, null, [
-            'action' => $this->generateUrl('category_show_all'),
+            'action' => $this->generateUrl('admin_category_show_all'),
             'method' => 'get',
         ]);
 
@@ -50,7 +50,7 @@ class CategoryController extends AbstractController
             $categories = $categoriesRepository->findAll();
         }
 
-        return $this->render('categories/show_all.html.twig', [
+        return $this->render('admin/categories/show_all.html.twig', [
             'controller_name' => 'CategoryController',
             'categories' => $categories,
             'form_sort' => $form->createView(),
@@ -64,7 +64,7 @@ class CategoryController extends AbstractController
      */
     public function showCategory(Categories $category)
     {
-        return $this->render('categories/show.html.twig', [
+        return $this->render('admin/categories/show.html.twig', [
             'controller_name' => 'CategoryController',
             'category' => $category,
         ]);
@@ -81,7 +81,7 @@ class CategoryController extends AbstractController
     public function addCategory(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
         $form = $this->createForm(CategoryAddType::class, null, [
-            'action' => $this->generateUrl('category_add'),
+            'action' => $this->generateUrl('admin_category_add'),
             'method' => 'post',
         ]);
 
@@ -109,10 +109,10 @@ class CategoryController extends AbstractController
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
-            return $this->redirectToRoute('category_show_all');
+            return $this->redirectToRoute('admin_category_show_all');
         }
 
-        return $this->render('categories/add.html.twig', [
+        return $this->render('admin/categories/add.html.twig', [
             'controller_name' => 'CategoryController',
             'form_add' => $form->createView(),
             'title' => 'Adding a category',
@@ -129,7 +129,7 @@ class CategoryController extends AbstractController
     public function editCategory(Categories $category, Request $request, EntityManagerInterface $entityManager)
     {
         $form = $this->createForm(CategoryAddType::class, $category, [
-            'action' => $this->generateUrl('category_edit', ['id' => $category->getId()]),
+            'action' => $this->generateUrl('admin_category_edit', ['id' => $category->getId()]),
             'method' => 'post',
         ]);
 
@@ -145,7 +145,7 @@ class CategoryController extends AbstractController
             $this->addFlash('success', $message);
         }
 
-        return $this->render('categories/add.html.twig', [
+        return $this->render('admin/categories/add.html.twig', [
             'controller_name' => 'CategoryController',
             'form_add' => $form->createView(),
             'title' => 'Editing the "' . $category->getTitle() . '" category',
@@ -163,7 +163,7 @@ class CategoryController extends AbstractController
     {
         if ($category->getArticles()->count() > 0) {
             $this->addFlash('warning', 'Some publications are included in this category. Exclude them from this category and try deleting again!');
-            return $this->redirectToRoute('category_show', ['id' => $category->getId()]);
+            return $this->redirectToRoute('admin_category_show', ['id' => $category->getId()]);
         } else {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($category);
@@ -174,7 +174,7 @@ class CategoryController extends AbstractController
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
-            return $this->redirectToRoute('category_show_all');
+            return $this->redirectToRoute('admin_category_show_all');
         }
     }
 }

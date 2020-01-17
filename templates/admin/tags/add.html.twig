@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -6,7 +6,7 @@
     <h1>{{ title }}</h1>
     <div class="mt-3 form-content">
         {{ form_start(form_add) }}
-            {{ form_widget(form_add) }}
+        <fieldset>{{ form_widget(form_add) }}</fieldset>
         {{ form_end(form_add) }}
     </div>
 {% endblock %}

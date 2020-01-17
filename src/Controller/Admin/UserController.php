@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Admin;
 
 use App\Entity\Statuses;
 use App\Entity\Users;
@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class UserController
  * @package App\Controller
- * @Route("/user", name="user")
+ * @Route("/admin/user", name="admin_user")
  */
 class UserController extends AbstractController
 {
@@ -33,7 +33,7 @@ class UserController extends AbstractController
     public function showAllUsers(Request $request, EntityManagerInterface $entityManager)
     {
         $formSort = $this->createForm(UserSortType::class, null, [
-            'action' => $this->generateUrl('user_show_all'),
+            'action' => $this->generateUrl('admin_user_show_all'),
             'method' => 'get',
         ]);
 
@@ -60,7 +60,7 @@ class UserController extends AbstractController
         }
 
         $formTarget = $this->createForm(UserTargetType::class, null, [
-            'action' => $this->generateUrl('user_show_all'),
+            'action' => $this->generateUrl('admin_user_show_all'),
             'method' => 'get',
         ]);
 
@@ -81,7 +81,7 @@ class UserController extends AbstractController
             $user = $usersRepository->findOneBy(['target' => 1]);
         }
 
-        return $this->render('users/show_all.html.twig', [
+        return $this->render('admin/users/show_all.html.twig', [
             'controller_name' => 'UserController',
             'users' => $users,
             'target_user' => $user,
@@ -97,7 +97,7 @@ class UserController extends AbstractController
      */
     public function showUser(Users $user)
     {
-        return $this->render('users/show.html.twig', [
+        return $this->render('admin/users/show.html.twig', [
             'controller_name' => 'UserController',
             'user' => $user,
         ]);
@@ -115,7 +115,7 @@ class UserController extends AbstractController
     public function addUser(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
         $form = $this->createForm(UserAddType::class, null, [
-            'action' => $this->generateUrl('user_add'),
+            'action' => $this->generateUrl('admin_user_add'),
             'method' => 'post',
         ]);
         $form->handleRequest($request);
@@ -145,10 +145,10 @@ class UserController extends AbstractController
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
-            return $this->redirectToRoute('user_show_all');
+            return $this->redirectToRoute('admin_user_show_all');
         }
 
-        return $this->render('users/add.html.twig', [
+        return $this->render('admin/users/add.html.twig', [
             'controller_name' => 'UserController',
             'form_add' => $form->createView(),
             'title' => 'Adding a user',
@@ -165,7 +165,7 @@ class UserController extends AbstractController
     public function editUser(Users $user, Request $request, EntityManagerInterface $entityManager)
     {
         $form = $this->createForm(UserAddType::class, $user, [
-            'action' => $this->generateUrl('user_edit', ['id' => $user->getId()]),
+            'action' => $this->generateUrl('admin_user_edit', ['id' => $user->getId()]),
             'method' => 'post',
             ])
             ->add('password', PasswordType::class, [
@@ -190,7 +190,7 @@ class UserController extends AbstractController
             $this->addFlash('success', $message);
         }
 
-        return $this->render('users/add.html.twig', [
+        return $this->render('admin/users/add.html.twig', [
             'controller_name' => 'UserController',
             'form_add' => $form->createView(),
             'title' => 'Editing user "' . $user->getLogin() . '"',
@@ -208,7 +208,7 @@ class UserController extends AbstractController
     {
         if ($user->getArticles()->count() > 0) {
             $this->addFlash('warning', 'This user has added publications. Unlink these publications to this user and try deleting again!');
-            return $this->redirectToRoute('user_show', ['id' => $user->getId()]);
+            return $this->redirectToRoute('admin_user_show', ['id' => $user->getId()]);
         } else {
             $favoriteArticles = $user->getFavoriteArticles();
             if ($favoriteArticles) {
@@ -233,7 +233,7 @@ class UserController extends AbstractController
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
-            return $this->redirectToRoute('user_show_all');
+            return $this->redirectToRoute('admin_user_show_all');
         }
     }
 }

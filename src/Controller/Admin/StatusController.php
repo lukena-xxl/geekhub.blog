@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Controller;
+namespace App\Controller\Admin;
 
 
 use App\Entity\Statuses;
@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class StatusController
  * @package App\Controller
- * @Route("/status", name="status")
+ * @Route("/admin/status", name="admin_status")
  */
 class StatusController extends AbstractController
 {
@@ -31,7 +31,7 @@ class StatusController extends AbstractController
     {
         $statuses = $statusesRepository->findAll();
 
-        return $this->render('statuses/show_all.html.twig', [
+        return $this->render('admin/statuses/show_all.html.twig', [
             'controller_name' => 'StatusController',
             'statuses' => $statuses,
         ]);
@@ -44,7 +44,7 @@ class StatusController extends AbstractController
      */
     public function showStatus(Statuses $status)
     {
-        return $this->render('statuses/show.html.twig', [
+        return $this->render('admin/statuses/show.html.twig', [
             'controller_name' => 'StatusController',
             'status' => $status,
         ]);
@@ -61,7 +61,7 @@ class StatusController extends AbstractController
     public function addStatus(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
         $form = $this->createForm(StatusAddType::class, null, [
-            'action' => $this->generateUrl('status_add'),
+            'action' => $this->generateUrl('admin_status_add'),
             'method' => 'post',
         ]);
         $form->handleRequest($request);
@@ -80,10 +80,10 @@ class StatusController extends AbstractController
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
-            return $this->redirectToRoute('status_show_all');
+            return $this->redirectToRoute('admin_status_show_all');
         }
 
-        return $this->render('statuses/add.html.twig', [
+        return $this->render('admin/statuses/add.html.twig', [
             'controller_name' => 'StatusController',
             'form_add' => $form->createView(),
             'title' => 'Adding status',
@@ -100,7 +100,7 @@ class StatusController extends AbstractController
     public function editStatus(Statuses $status, Request $request, EntityManagerInterface $entityManager)
     {
         $form = $this->createForm(StatusAddType::class, $status, [
-            'action' => $this->generateUrl('status_edit', ['id' => $status->getId()]),
+            'action' => $this->generateUrl('admin_status_edit', ['id' => $status->getId()]),
             'method' => 'post',
         ]);
 
@@ -116,7 +116,7 @@ class StatusController extends AbstractController
             $this->addFlash('success', $message);
         }
 
-        return $this->render('statuses/add.html.twig', [
+        return $this->render('admin/statuses/add.html.twig', [
             'controller_name' => 'StatusController',
             'form_add' => $form->createView(),
             'title' => 'Editing the status "' . $status->getTitle() . '"',
@@ -134,7 +134,7 @@ class StatusController extends AbstractController
     {
         if ($status->getUsers()->count() > 0) {
             $this->addFlash('warning', 'Some users have this status. Define a different status for them and try to delete again!');
-            return $this->redirectToRoute('status_show', ['id' => $status->getId()]);
+            return $this->redirectToRoute('admin_status_show', ['id' => $status->getId()]);
         } else {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($status);
@@ -145,7 +145,7 @@ class StatusController extends AbstractController
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
-            return $this->redirectToRoute('status_show_all');
+            return $this->redirectToRoute('admin_status_show_all');
         }
     }
 }

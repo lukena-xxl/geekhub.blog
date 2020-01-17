@@ -1,9 +1,9 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
 {% block title %}Categories{% endblock %}
 
 {% block body %}
-    <a class="btn btn-success" href="{{ path('category_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add category</a>
+    <a class="btn btn-success" href="{{ path('admin_category_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add category</a>
     <div class="mt-3">
         {{ form_start(form_sort) }}
         <div class="d-inline-block">Categories with</div>
@@ -32,9 +32,9 @@
                     {% endif %}>{{ category.title }}</td>
                 <td>{{ category.articles.count }}</td>
                 <td>
-                    <a class="btn btn-info" href="{{ path('category_show', {'id': category.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
-                    <a class="btn btn-warning" href="{{ path('category_edit', {'id': category.id}) }}" role="button"><i class="fas fa-edit"></i></a>
-                    <a class="btn btn-danger" href="{{ path('category_delete', {'id': category.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
+                    <a class="btn btn-info" href="{{ path('admin_category_show', {'id': category.id}) }}" role="button"><i class="fas fa-info-circle"></i></a>
+                    <a class="btn btn-warning" href="{{ path('admin_category_edit', {'id': category.id}) }}" role="button"><i class="fas fa-edit"></i></a>
+                    <a class="btn btn-danger" href="{{ path('admin_category_delete', {'id': category.id}) }}" role="button"><i class="fas fa-trash-alt"></i></a>
                 </td>
             </tr>
         {% endfor %}

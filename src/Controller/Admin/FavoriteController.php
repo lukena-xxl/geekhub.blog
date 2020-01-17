@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Admin;
 
 use App\Entity\Articles;
 use App\Entity\Users;
@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class FavoriteController
  * @package App\Controller
- * @Route("/addtofavorites", name="favorite")
+ * @Route("/admin/addtofavorites", name="admin_favorite")
  */
 class FavoriteController extends AbstractController
 {
@@ -38,10 +38,10 @@ class FavoriteController extends AbstractController
             $entityManager->persist($targetUser);
             $entityManager->flush();
 
-            return $this->redirectWithMessage('article_show_all', 'success', $mes);
+            return $this->redirectWithMessage('admin_article_show_all', 'success', $mes);
 
         } else {
-            return $this->redirectWithMessage('article_show_all', 'danger', 'Current user not found!');
+            return $this->redirectWithMessage('admin_article_show_all', 'danger', 'Current user not found!');
         }
     }
 
@@ -67,9 +67,9 @@ class FavoriteController extends AbstractController
             $entityManager->persist($targetUser);
             $entityManager->flush();
 
-            return $this->redirectWithMessage('user_show_all', 'success', $mes);
+            return $this->redirectWithMessage('admin_user_show_all', 'success', $mes);
         } else {
-            return $this->redirectWithMessage('user_show_all', 'danger', 'Current user not found!');
+            return $this->redirectWithMessage('admin_user_show_all', 'danger', 'Current user not found!');
         }
     }
 
