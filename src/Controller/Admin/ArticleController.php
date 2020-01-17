@@ -123,7 +123,7 @@ class ArticleController extends AbstractController
             $article = new Articles();
             $article->setTitle($formData['title']);
             $article->setBody($formData['body']);
-            $article->setCreateDate($formData['create_date']);
+            $article->setCreateDate($datetime);
             $article->setUpdateDate($datetime);
 
             if(!empty($formData['go_on_public'])) {
@@ -215,7 +215,7 @@ class ArticleController extends AbstractController
                 'id' => 'article_form',
                 'data-article' => $article->getId(),
             ],
-        ])->remove('create_date');
+        ]);
 
         $form->handleRequest($request);
 

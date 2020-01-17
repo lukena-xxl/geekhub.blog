@@ -19,9 +19,7 @@
                 <label for="inputPassword" class="mt-2">Password</label>
                 <input type="password" name="password" id="inputPassword" class="form-control" required>
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-                <button class="btn btn-success mt-2" type="submit">
-                    Sign in
-                </button>
+                <button class="btn btn-success mt-2" type="submit">Sign in</button>
             </form>
         </div>
     {% endif %}

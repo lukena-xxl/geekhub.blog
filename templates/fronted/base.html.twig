@@ -18,7 +18,7 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav mr-auto">
                         <li class="nav-item">
-                            <a class="nav-link{% if controller_name == 'FrontedArticleController' %} active{% endif %}" href="#">Publications</a>
+                            <a class="nav-link{% if controller_name == 'ArticleController' %} active{% endif %}" href="{{ path('article_show_all') }}">Publications</a>
                         </li>
                     </ul>
                     <hr class="d-block d-lg-none" />
@@ -26,7 +26,11 @@
                         <a href="#" class="font-weight-bold text-dark">{{ app.user.login }}</a>
                         <a href="{{ path('app_logout') }}" class="text-muted ml-2"><i class="fas fa-sign-out-alt"></i></a>
                     {% else %}
-                        <a href="{{ path('app_login') }}" class="text-success ml-2">Sign in<i class="fas fa-sign-in-alt ml-2"></i></a>
+                        <div class="text-muted">
+                            <a href="{{ path('app_login') }}" class="mr-1">Sign in</a>
+                            /
+                            <a href="{{ path('app_register') }}" class="ml-1">Register</a>
+                        </div>
                     {% endif %}
                 </div>
             </nav>

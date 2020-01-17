@@ -94,7 +94,7 @@ function sendData(formData, path)
     let button = $('form#article_form').find('button[type="submit"]');
     button.prop('disabled', true).text('Dispatch ...');
 
-    $.ajax('/article/' + path, {
+    $.ajax('/admin/article/' + path, {
         method: "POST",
         data: formData,
         async: true,
@@ -106,7 +106,7 @@ function sendData(formData, path)
             if (typeof dataJson.error !== "undefined") {
                 errorReporting(dataJson.error);
             } else {
-                window.location.href = '/article/show/' + dataJson.id;
+                window.location.href = '/admin/article/show/' + dataJson.id;
             }
         },
         error() {

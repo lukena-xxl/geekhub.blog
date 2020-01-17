@@ -25,9 +25,6 @@
             </div>
             {{ form_row(form_add.go_on_public) }}
             {{ form_row(form_add.is_visible) }}
-            {% if form_add.create_date is defined %}
-                {{ form_row(form_add.create_date) }}
-            {% endif %}
             {{ form_row(form_add.submit) }}
         </fieldset>
         {{ form_end(form_add) }}
