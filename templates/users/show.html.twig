@@ -11,6 +11,9 @@
                 <li class="list-group-item rounded-0"><strong>ID:</strong> {{ user.id }}</li>
                 <li class="list-group-item rounded-0"><strong>Status:</strong> <a href="{{ path('status_show', {'id': user.status.id}) }}">{{ user.status.title }}</a></li>
                 <li class="list-group-item rounded-0"><strong>Login:</strong> {{ user.login }}</li>
+                    {% if user.email %}
+                        <li class="list-group-item rounded-0"><strong>Email:</strong> {{ user.email }}</li>
+                    {% endif %}
                     {% if user.name %}
                         <li class="list-group-item rounded-0"><strong>Name:</strong> {{ user.name }}</li>
                     {% endif %}

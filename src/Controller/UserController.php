@@ -127,6 +127,7 @@ class UserController extends AbstractController
             $user->setName($formData['name']);
             $user->setLogin($formData['login']);
             $user->setPassword($formData['password']);
+            $user->setEmail($formData['email']);
             $user->setRegistrationDate(new \DateTime());
             $user->setBirthDate($formData['birth_date']);
             $user->setGender($formData['gender']);

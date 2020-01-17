@@ -18,19 +18,7 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav mr-auto">
                         <li class="nav-item">
-                            <a class="nav-link{% if controller_name == 'CategoryController' %} active{% endif %}" href="{{ path('category_show_all') }}">Categories</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if controller_name == 'TagController' %} active{% endif %}" href="{{ path('tag_show_all') }}">Tags</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if controller_name == 'ArticleController' %} active{% endif %}" href="{{ path('article_show_all') }}">Publications</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if controller_name == 'UserController' %} active{% endif %}" href="{{ path('user_show_all') }}">Users</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if controller_name == 'StatusController' %} active{% endif %}" href="{{ path('status_show_all') }}">User Statuses</a>
+                            <a class="nav-link{% if controller_name == 'FrontedArticleController' %} active{% endif %}" href="{{ path('article_show_all') }}">Publications</a>
                         </li>
                     </ul>
                     <hr class="d-block d-lg-none" />
@@ -43,11 +31,6 @@
                 </div>
             </nav>
         {% endblock %}
-        <div class="px-3 pb-3">
-            {% include 'common/flash_messages.html.twig' %}
-            {%  if isDay('Friday') %}<div class="alert alert-info" role="alert">Today is <strong>Friday</strong>. The weekend starts tomorrow!</div>{% endif %}
-            {% block body %}{% endblock %}
-        </div>
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
         {% endblock %}

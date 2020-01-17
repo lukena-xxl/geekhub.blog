@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Admin\Controller;
 
 use App\Entity\Articles;
 use App\Entity\Categories;
@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 /**
  * Class ArticleController
  * @package App\Controller
- * @Route("/article", name="article")
+ * @Route("/admin/article", name="admin_article")
  */
 class ArticleController extends AbstractController
 {
@@ -35,7 +35,7 @@ class ArticleController extends AbstractController
     public function showAllArticles(Request $request, EntityManagerInterface $entityManager)
     {
         $form = $this->createForm(ArticleSortType::class, null, [
-            'action' => $this->generateUrl('article_show_all'),
+            'action' => $this->generateUrl('admin_article_show_all'),
             'method' => 'get',
         ]);
 
@@ -71,7 +71,7 @@ class ArticleController extends AbstractController
 
         $targetUser = $entityManager->getRepository(Users::class)->findOneBy(['target' => 1]);
 
-        return $this->render('articles/show_all.html.twig', [
+        return $this->render('admin/articles/show_all.html.twig', [
             'controller_name' => 'ArticleController',
             'articles' => $articles,
             'target_user' => $targetUser,
@@ -86,7 +86,7 @@ class ArticleController extends AbstractController
      */
     public function showArticle(Articles $article)
     {
-        return $this->render('articles/show.html.twig', [
+        return $this->render('admin/articles/show.html.twig', [
             'controller_name' => 'ArticleController',
             'article' => $article,
         ]);
@@ -104,7 +104,7 @@ class ArticleController extends AbstractController
     public function addArticle(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, UpdateManager $updateManager)
     {
         $form = $this->createForm(ArticleAddType::class, null, [
-            'action' => $this->generateUrl('article_add'),
+            'action' => $this->generateUrl('admin_article_add'),
             'method' => 'post',
             'attr' => [
                 'id' => 'article_form',
@@ -191,7 +191,7 @@ class ArticleController extends AbstractController
             return $this->json(json_encode($response));
         }
 
-        return $this->render('articles/add.html.twig', [
+        return $this->render('admin/articles/add.html.twig', [
             'controller_name' => 'ArticleController',
             'form_add' => $form->createView(),
             'title' => 'Adding a publication',
@@ -209,7 +209,7 @@ class ArticleController extends AbstractController
     public function editArticle(Articles $article, Request $request, EntityManagerInterface $entityManager)
     {
         $form = $this->createForm(ArticleAddType::class, $article, [
-            'action' => $this->generateUrl('article_edit', ['id' => $article->getId()]),
+            'action' => $this->generateUrl('admin_article_edit', ['id' => $article->getId()]),
             'method' => 'post',
             'attr' => [
                 'id' => 'article_form',
@@ -259,7 +259,7 @@ class ArticleController extends AbstractController
             return $this->json(json_encode($response));
         }
 
-        return $this->render('articles/add.html.twig', [
+        return $this->render('admin/articles/add.html.twig', [
             'controller_name' => 'ArticleController',
             'form_add' => $form->createView(),
             'image' => $article->getImage(),
@@ -292,7 +292,7 @@ class ArticleController extends AbstractController
         $updateManager->notifyOfUpdate($message);
         $this->addFlash('success', $message);
 
-        return $this->redirectToRoute('article_show_all');
+        return $this->redirectToRoute('admin_article_show_all');
     }
 
     /**
