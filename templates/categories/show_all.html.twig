@@ -1,15 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Категории{% endblock %}
+{% block title %}Categories{% endblock %}
 
 {% block body %}
-    <a class="btn btn-success" href="{{ path('category_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Добавить категорию</a>
+    <a class="btn btn-success" href="{{ path('category_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add category</a>
     <div class="mt-3">
         {{ form_start(form_sort) }}
-        <div class="d-inline-block">Категории в которых</div>
+        <div class="d-inline-block">Categories with</div>
         <div class="d-inline-block">{{ form_row(form_sort.symbol) }}</div>
+        <div class="d-inline-block">than</div>
         <div class="d-inline-block">{{ form_row(form_sort.num) }}</div>
-        <div class="d-inline-block">публикаций</div>
+        <div class="d-inline-block">posts</div>
         <div class="d-inline-block">{{ form_row(form_sort.submit) }}</div>
         {{ form_end(form_sort) }}
     </div>
@@ -17,9 +18,9 @@
     <table class="table">
         <tr>
             <th>ID</th>
-            <th>Имя</th>
-            <th>Публикации</th>
-            <th style="min-width:200px">Действия</th>
+            <th>Name</th>
+            <th>Publications</th>
+            <th class="min-width-actions">Actions</th>
         </tr>
         {% for category in categories %}
             <tr>
@@ -39,6 +40,6 @@
         {% endfor %}
     </table>
     {% else %}
-        <p class="mt-3">Еще нет категорий!</p>
+        <p class="mt-3">There are no categories yet!</p>
     {% endif %}
 {% endblock %}

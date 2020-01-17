@@ -25,48 +25,48 @@ class ArticleAddType extends AbstractType
 
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Заголовок',
+                'label' => 'Title',
                 'attr' => [
-                    'placeholder' => 'Введите заголовок',
+                    'placeholder' => 'Enter a title',
                 ],
             ])
             ->add('slug', TextType::class, [
                 'required' => false,
                 'label' => 'Slug',
-                'help' => 'Разрешены символы: [a-z] _ -',
+                'help' => 'Characters allowed: [a-z] _ -',
                 'attr' => [
-                    'placeholder' => 'Введите slug',
+                    'placeholder' => 'Enter a slug',
                 ],
             ])
             ->add('category', EntityType::class, [
-                'label' => 'Категория',
+                'label' => 'Category',
                 'class' => Categories::class,
                 'choice_label' => 'title',
             ])
             ->add('tag', EntityType::class, [
                 'required' => false,
-                'label' => 'Теги',
+                'label' => 'Tags',
                 'class' => Tags::class,
                 'choice_label' => 'title',
                 'multiple' => true,
             ])
             ->add('user', EntityType::class, [
-                'label' => 'Привязать к пользователю',
+                'label' => 'Bind to user',
                 'class' => Users::class,
                 'choice_label' => 'login',
             ])
             ->add('body', TextareaType::class, [
                 'required' => false,
-                'label' => 'Публикация',
+                'label' => 'Publication',
                 'attr' => [
-                    'placeholder' => 'Напишите что-нибудь',
+                    'placeholder' => 'Write something',
                     'rows' => 10,
                     'class' => 'editor',
                 ],
             ])
             ->add('image', FileType::class, [
                 'required' => false,
-                'label' => 'Изображение (JPG, JPEG)',
+                'label' => 'Picture (JPG, JPEG)',
                 'mapped' => false,
                 'constraints' => [
                     new File([
@@ -74,19 +74,19 @@ class ArticleAddType extends AbstractType
                         'mimeTypes' => [
                             'image/jpeg',
                         ],
-                        'mimeTypesMessage' => 'Вы можете загружать изображения JPG, JPEG',
+                        'mimeTypesMessage' => 'You can upload jpg/jpeg images',
                     ])
                 ],
                 'attr' => [
-                    'placeholder' => ' - не выбрано - ',
-                    'lang' => 'uk',
+                    'placeholder' => ' - not chosen - ',
+                    'lang' => 'en',
                 ],
             ])
             ->add('go_on_public', DateTimeType::class, [
                 'required' => false,
                 'widget' => 'single_text',
-                'label' => 'Запланировать дату начала показа',
-                'help' => 'Выберите дату начала показа публикации или оставьте поле пустым для немедленной публикации',
+                'label' => 'Display schedule',
+                'help' => 'Select a start date for the publication, or leave the field blank for immediate publication',
                 'attr' => [
                     'min' => $dateTime->format('Y-m-d\TH:i'),
                 ],
@@ -94,22 +94,22 @@ class ArticleAddType extends AbstractType
             ->add('is_visible', CheckboxType::class, [
                 'required' => false,
                 'value' => 1,
-                'label' => 'Включена/Отключена',
+                'label' => 'Enabled / Disabled',
                 'label_attr' => [
                     'class' => 'font-weight-normal text-dark',
                 ],
             ])
             ->add('create_date', DateTimeType::class, [
                 'widget' => 'single_text',
-                'label' => 'Дата создания публикации',
-                'help' => 'Эта дата будет записана, как дата создания публикации',
+                'label' => 'Publication Date',
+                'help' => 'This date will be recorded as the date the publication was created',
                 'attr' => [
                     'value' => $dateTime->format('Y-m-d\TH:i:s'),
                     'readonly' => true,
                 ],
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Сохранить',
+                'label' => 'Save',
                 'attr' => [
                     'class' => 'btn-success',
                 ],

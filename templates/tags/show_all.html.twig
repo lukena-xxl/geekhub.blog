@@ -1,12 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Теги{% endblock %}
+{% block title %}Tags{% endblock %}
 
 {% block body %}
-    <a class="btn btn-success" href="{{ path('tag_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Добавить тег</a>
+    <a class="btn btn-success" href="{{ path('tag_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add tag</a>
     <div class="my-3">
         {{ form_start(form_sort) }}
-        <div class="d-inline-block">Теги</div>
+        <div class="d-inline-block">Tags</div>
         <div class="d-inline-block">{{ form_row(form_sort.article) }}</div>
         <div class="d-inline-block">{{ form_row(form_sort.submit) }}</div>
         {{ form_end(form_sort) }}
@@ -15,9 +15,9 @@
     <table class="table mt-3">
         <tr>
             <th>ID</th>
-            <th>Название</th>
-            <th>Публикации</th>
-            <th style="min-width:200px">Действия</th>
+            <th>Name</th>
+            <th>Publications</th>
+            <th class="min-width-actions">Actions</th>
         </tr>
         {% for tag in tags %}
             <tr>
@@ -37,6 +37,6 @@
         {% endfor %}
     </table>
     {% else %}
-        <p class="mt-3">Еще нет тегов!</p>
+        <p class="mt-3">No tags yet!</p>
     {% endif %}
 {% endblock %}

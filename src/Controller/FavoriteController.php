@@ -18,63 +18,64 @@ class FavoriteController extends AbstractController
 {
     /**
      * @Route("/articles/{id}", name="_articles")
+     * @param Articles $article
      * @param EntityManagerInterface $entityManager
-     * @param $id
      * @return RedirectResponse
      */
-    public function addToFavoritesArticles(EntityManagerInterface $entityManager, $id)
+    public function addToFavoritesArticles(Articles $article, EntityManagerInterface $entityManager)
     {
-        if (!empty($id)) {
-            $article = $entityManager->getRepository(Articles::class)->find($id);
+        $targetUser = $entityManager->getRepository(Users::class)->findOneBy(['target' => 1]);
 
-            if ($article) {
-                $targetUser = $entityManager->getRepository(Users::class)->findOneBy(['target' => 1]);
-
-                if ($targetUser) {
-                    if (in_array($article, $targetUser->getFavoriteArticles()->toArray())) {
-                        $targetUser->removeFavoriteArticle($article);
-                    } else {
-                        $targetUser->addFavoriteArticle($article);
-                    }
-
-                    $entityManager->persist($targetUser);
-                    $entityManager->flush();
-                }
+        if ($targetUser) {
+            if (in_array($article, $targetUser->getFavoriteArticles()->toArray())) {
+                $targetUser->removeFavoriteArticle($article);
+                $mes = 'Publication removed from favorites!';
+            } else {
+                $targetUser->addFavoriteArticle($article);
+                $mes = 'Publication added to favorites!';
             }
-        }
 
-        return $this->redirectToRoute('article_show_all');
+            $entityManager->persist($targetUser);
+            $entityManager->flush();
+
+            return $this->redirectWithMessage('article_show_all', 'success', $mes);
+
+        } else {
+            return $this->redirectWithMessage('article_show_all', 'danger', 'Current user not found!');
+        }
     }
 
     /**
      * @Route("/users/{id}", name="_users")
+     * @param Users $user
      * @param EntityManagerInterface $entityManager
-     * @param $id
      * @return RedirectResponse
      */
-    public function addToFavoritesUsers(EntityManagerInterface $entityManager, $id)
+    public function addToFavoritesUsers(Users $user, EntityManagerInterface $entityManager)
     {
-        if (!empty($id)) {
-            $userRepository = $entityManager->getRepository(Users::class);
+        $targetUser = $entityManager->getRepository(Users::class)->findOneBy(['target' => 1]);
 
-            $user = $userRepository->find($id);
-
-            if ($user) {
-                $targetUser = $userRepository->findOneBy(['target' => 1]);
-
-                if ($targetUser) {
-                    if (in_array($user, $targetUser->getFavoriteUsers()->toArray())) {
-                        $targetUser->removeFavoriteUser($user);
-                    } else {
-                        $targetUser->addFavoriteUser($user);
-                    }
-
-                    $entityManager->persist($targetUser);
-                    $entityManager->flush();
-                }
+        if ($targetUser) {
+            if (in_array($user, $targetUser->getFavoriteUsers()->toArray())) {
+                $targetUser->removeFavoriteUser($user);
+                $mes = 'User removed from favorites!';
+            } else {
+                $targetUser->addFavoriteUser($user);
+                $mes = 'User added to favorites!';
             }
-        }
 
-        return $this->redirectToRoute('user_show_all');
+            $entityManager->persist($targetUser);
+            $entityManager->flush();
+
+            return $this->redirectWithMessage('user_show_all', 'success', $mes);
+        } else {
+            return $this->redirectWithMessage('user_show_all', 'danger', 'Current user not found!');
+        }
+    }
+
+    private function redirectWithMessage($route, $type, $message)
+    {
+        $this->addFlash($type, $message);
+        return $this->redirectToRoute($route);
     }
 }

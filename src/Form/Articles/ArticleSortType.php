@@ -20,21 +20,21 @@ class ArticleSortType extends AbstractType
             ->add('user', EntityType::class, [
                 'required' => false,
                 'label' => false,
-                'placeholder' => 'всех пользователей',
+                'placeholder' => 'all users',
                 'class' => Users::class,
                 'choice_label' => 'login',
             ])
             ->add('category', EntityType::class, [
                 'required' => false,
                 'label' => false,
-                'placeholder' => 'всех категориях',
+                'placeholder' => 'all categories',
                 'class' => Categories::class,
                 'choice_label' => 'title',
             ])
             ->add('tag', EntityType::class, [
                 'required' => false,
                 'label' => false,
-                'placeholder' => 'всеми тегами',
+                'placeholder' => 'all tags',
                 'class' => Tags::class,
                 'choice_label' => 'title',
             ])
@@ -49,7 +49,7 @@ class ArticleSortType extends AbstractType
                 'widget' => 'single_text',
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Показать',
+                'label' => 'Show',
                 'attr' => [
                     'class' => 'btn-secondary btn-sm',
                 ],

@@ -14,13 +14,13 @@ class StatusAddType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Нзвание статуса',
+                'label' => 'Title',
                 'attr' => [
-                    'placeholder' => 'Введите название',
+                    'placeholder' => 'Enter a title',
                 ],
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Сохранить',
+                'label' => 'Save',
                 'attr' => [
                     'class' => 'btn-success',
                 ],

@@ -14,24 +14,25 @@
                     <a class="nav-link{% if controller_name == 'MainController' %} active{% endif %}" href="{{ path('index') }}"><i class="fas fa-home"></i></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link{% if controller_name == 'CategoryController' %} active{% endif %}" href="{{ path('category_show_all') }}">Категории</a>
+                    <a class="nav-link{% if controller_name == 'CategoryController' %} active{% endif %}" href="{{ path('category_show_all') }}">Categories</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link{% if controller_name == 'TagController' %} active{% endif %}" href="{{ path('tag_show_all') }}">Теги</a>
+                    <a class="nav-link{% if controller_name == 'TagController' %} active{% endif %}" href="{{ path('tag_show_all') }}">Tags</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link{% if controller_name == 'ArticleController' %} active{% endif %}" href="{{ path('article_show_all') }}">Публикации</a>
+                    <a class="nav-link{% if controller_name == 'ArticleController' %} active{% endif %}" href="{{ path('article_show_all') }}">Publications</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link{% if controller_name == 'UserController' %} active{% endif %}" href="{{ path('user_show_all') }}">Пользователи</a>
+                    <a class="nav-link{% if controller_name == 'UserController' %} active{% endif %}" href="{{ path('user_show_all') }}">Users</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link{% if controller_name == 'StatusController' %} active{% endif %}" href="{{ path('status_show_all') }}">Статусы пользователей</a>
+                    <a class="nav-link{% if controller_name == 'StatusController' %} active{% endif %}" href="{{ path('status_show_all') }}">User Statuses</a>
                 </li>
             </ul>
         {% endblock %}
         <div class="px-3 pb-3">
             {% include 'common/flash_messages.html.twig' %}
+            {%  if isDay('Friday') %}<div class="alert alert-info" role="alert">Today is <strong>Friday</strong>. The weekend starts tomorrow!</div>{% endif %}
             {% block body %}{% endblock %}
         </div>
         {% block javascripts %}

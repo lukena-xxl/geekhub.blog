@@ -1,22 +1,23 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Пользователи{% endblock %}
+{% block title %}Users{% endblock %}
 
 {% block body %}
-    <div class="d-inline-block mr-3"><a class="btn btn-success" href="{{ path('user_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Добавить пользователя</a></div>
+    <div class="d-inline-block mr-3"><a class="btn btn-success" href="{{ path('user_add') }}" role="button"><i class="fas fa-plus-circle mr-2"></i>Add user</a></div>
     <div class="d-inline-block">
         {{ form_start(form_target) }}
-        <div class="d-inline-block">Текущий пользователь:</div>
+        <div class="d-inline-block">Current user:</div>
         <div class="d-inline-block">{{ form_row(form_target.user) }}</div>
         <div class="d-inline-block">{{ form_row(form_target.submit) }}</div>
         {{ form_end(form_target) }}
     </div>
     <div class="my-3">
         {{ form_start(form_sort) }}
-        <div class="d-inline-block">Пользователи у которых</div>
+        <div class="d-inline-block">Users with</div>
         <div class="d-inline-block">{{ form_row(form_sort.symbol) }}</div>
+        <div class="d-inline-block">than</div>
         <div class="d-inline-block">{{ form_row(form_sort.num) }}</div>
-        <div class="d-inline-block">публикаций в:</div>
+        <div class="d-inline-block">posts in:</div>
         <div class="d-inline-block">{{ form_row(form_sort.category) }}</div>
         <div class="d-inline-block">{{ form_row(form_sort.submit) }}</div>
         {{ form_end(form_sort) }}
@@ -25,12 +26,12 @@
         <table class="table mt-3">
             <tr>
                 <th>ID</th>
-                <th>Логин</th>
-                <th>Статус</th>
-                <th>Имя</th>
-                <th>Дата регистрации</th>
-                <th>Публикации</th>
-                <th style="min-width:250px">Действия</th>
+                <th>Login</th>
+                <th>Status</th>
+                <th>Name</th>
+                <th>Registration date</th>
+                <th>Publications</th>
+                <th class="min-width-actions">Actions</th>
             </tr>
             {% for user in users %}
                 <tr>
@@ -52,6 +53,6 @@
             {% endfor %}
         </table>
     {% else %}
-        <p class="mt-3">Еще нет пользователей!</p>
+        <p class="mt-3">No users yet!</p>
     {% endif %}
 {% endblock %}

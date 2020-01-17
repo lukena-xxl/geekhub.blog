@@ -2,6 +2,7 @@
 
 namespace App\Form\Tags;
 
+use App\Entity\Tags;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -15,29 +16,29 @@ class TagAddType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Нзвание тега',
+                'label' => 'Title',
                 'attr' => [
-                    'placeholder' => 'Введите название',
+                    'placeholder' => 'Enter a title',
                 ],
             ])
             ->add('slug', TextType::class, [
                 'required' => false,
                 'label' => 'Slug тега',
-                'help' => 'Разрешены символы: [a-z] _ -',
+                'help' => 'Characters allowed: [a-z] _ -',
                 'attr' => [
-                    'placeholder' => 'Введите slug',
+                    'placeholder' => 'Enter a slug',
                 ],
             ])
             ->add('is_visible', CheckboxType::class, [
                 'required' => false,
                 'value' => 1,
-                'label' => 'Включен/Отключен',
+                'label' => 'Enabled / Disabled',
                 'label_attr' => [
                     'class' => 'font-weight-normal text-dark',
                 ],
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Сохранить',
+                'label' => 'Save',
                 'attr' => [
                     'class' => 'btn-success',
                 ],

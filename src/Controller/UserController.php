@@ -92,14 +92,14 @@ class UserController extends AbstractController
 
     /**
      * @Route("/show/{id}", name="_show", requirements={"id"="\d+"})
-     * @param $id
+     * @param Users $user
      * @return Response
      */
-    public function showUser($id)
+    public function showUser(Users $user)
     {
         return $this->render('users/show.html.twig', [
             'controller_name' => 'UserController',
-            'user' => $this->findUser($id),
+            'user' => $user,
         ]);
     }
 
@@ -139,7 +139,7 @@ class UserController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            $message = "Добавлен новый пользователь \"" . $user->getLogin() . "\" со статусом \"" . $user->getStatus()->getTitle() . "\"";
+            $message = "New user \"" . $user->getLogin() . "\" with status \"" . $user->getStatus()->getTitle() . "\" has been added";
             $logger->info($message);
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
@@ -150,32 +150,29 @@ class UserController extends AbstractController
         return $this->render('users/add.html.twig', [
             'controller_name' => 'UserController',
             'form_add' => $form->createView(),
-            'title' => 'Добавление пользователя',
+            'title' => 'Adding a user',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
+     * @param Users $user
      * @param Request $request
      * @param EntityManagerInterface $entityManager
-     * @param $id
      * @return Response
      */
-    public function editUser(Request $request, EntityManagerInterface $entityManager, $id)
+    public function editUser(Users $user, Request $request, EntityManagerInterface $entityManager)
     {
-        $user = $this->findUser($id);
-
         $form = $this->createForm(UserAddType::class, $user, [
             'action' => $this->generateUrl('user_edit', ['id' => $user->getId()]),
             'method' => 'post',
             ])
-            ->remove('password')
             ->add('password', PasswordType::class, [
                 'required' => false,
-                'label' => 'Пароль',
-                'help' => 'Пароль должен содержать цифры и буквы',
+                'label' => 'Password',
+                'help' => 'Password must contain numbers and letters. If you do not need to change the password, leave this field blank',
                 'attr' => [
-                    'placeholder' => 'Введите пароль',
+                    'placeholder' => 'Enter password',
                     ],
                 'empty_data' => $user->getPassword(),
                 ]);
@@ -188,32 +185,29 @@ class UserController extends AbstractController
             $entityManager->persist($formData);
             $entityManager->flush();
 
-            $message = "Информация о пользователе была успешно изменена!";
+            $message = "User information has been successfully changed!";
             $this->addFlash('success', $message);
         }
 
         return $this->render('users/add.html.twig', [
             'controller_name' => 'UserController',
             'form_add' => $form->createView(),
-            'title' => 'Редактирование пользователя "' . $user->getLogin() . '"',
+            'title' => 'Editing user "' . $user->getLogin() . '"',
         ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
+     * @param Users $user
      * @param UpdateManager $updateManager
      * @param LoggerInterface $logger
-     * @param $id
      * @return Response
      */
-    public function deleteUser(UpdateManager $updateManager, LoggerInterface $logger, $id)
+    public function deleteUser(Users $user, UpdateManager $updateManager, LoggerInterface $logger)
     {
-        $user = $this->findUser($id);
-
         if ($user->getArticles()->count() > 0) {
-            throw $this->createNotFoundException(
-                'К пользователю привязаны некоторые статьи. Уберите привязку и повторите попытку удаления!'
-            );
+            $this->addFlash('warning', 'This user has added publications. Unlink these publications to this user and try deleting again!');
+            return $this->redirectToRoute('user_show', ['id' => $user->getId()]);
         } else {
             $favoriteArticles = $user->getFavoriteArticles();
             if ($favoriteArticles) {
@@ -233,29 +227,12 @@ class UserController extends AbstractController
             $entityManager->remove($user);
             $entityManager->flush();
 
-            $message = "Пользователь \"" . $user->getLogin() . "\" был удален";
+            $message = "User \"" . $user->getLogin() . "\" has been deleted";
             $logger->info($message);
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
             return $this->redirectToRoute('user_show_all');
-        }
-    }
-
-    /**
-     * @param $id
-     * @return Users
-     */
-    private function findUser($id)
-    {
-        $entityManager = $this->getDoctrine()->getManager();
-        $user = $entityManager->getRepository(Users::class)->find($id);
-        if (!$user) {
-            throw $this->createNotFoundException(
-                'Пользователь с идентификатором "' . $id . '" не найден!'
-            );
-        } else {
-            return $user;
         }
     }
 }

@@ -9,7 +9,7 @@ let cropper = false;
 function errorReporting(msg) {
     $.alert({
         icon: 'fas fa-exclamation-triangle',
-        title: 'Внимание!',
+        title: 'Attention!',
         content: msg,
         type: 'red',
         typeAnimated: true
@@ -92,7 +92,7 @@ function cropping()
 function sendData(formData, path)
 {
     let button = $('form#article_form').find('button[type="submit"]');
-    button.prop('disabled', true).text('Оправка ...');
+    button.prop('disabled', true).text('Dispatch ...');
 
     $.ajax('/article/' + path, {
         method: "POST",
@@ -110,8 +110,8 @@ function sendData(formData, path)
             }
         },
         error() {
-            errorReporting('Произошла ошибка');
-            button.prop('disabled', false).text('Сохранить');
+            errorReporting('An error has occurred');
+            button.prop('disabled', false).text('Save');
         },
     });
 }
@@ -138,7 +138,7 @@ $(document).ready(function () {
 
             reader.readAsDataURL(fileObj);
         } else {
-            $.alert('Неправильный тип файла!');
+            errorReporting('Invalid file type');
             obj.val('');
             obj.next('label').html(defaultPlaceholder);
         }
@@ -171,7 +171,7 @@ $(document).ready(function () {
             if ($('*').is('#old_image')) {
                 sendData(formData, path);
             } else {
-                $.alert('Выберите изображение!');
+                errorReporting('Choose image');
             }
         }
     });

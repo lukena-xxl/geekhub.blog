@@ -59,14 +59,14 @@ class CategoryController extends AbstractController
 
     /**
      * @Route("/show/{id}", name="_show", requirements={"id"="\d+"})
-     * @param $id
+     * @param Categories $category
      * @return Response
      */
-    public function showCategory($id)
+    public function showCategory(Categories $category)
     {
         return $this->render('categories/show.html.twig', [
             'controller_name' => 'CategoryController',
-            'category' => $this->findCategory($id),
+            'category' => $category,
         ]);
     }
 
@@ -104,7 +104,7 @@ class CategoryController extends AbstractController
             $entityManager->persist($category);
             $entityManager->flush();
 
-            $message = "Добавлена новая категория \"" . $category->getTitle() . "\"";
+            $message = "Added a new category of \"" . $category->getTitle() . "\"";
             $logger->info($message);
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
@@ -115,21 +115,19 @@ class CategoryController extends AbstractController
         return $this->render('categories/add.html.twig', [
             'controller_name' => 'CategoryController',
             'form_add' => $form->createView(),
-            'title' => 'Добавление категории',
+            'title' => 'Adding a category',
         ]);
     }
 
     /**
      * @Route("/edit/{id}", name="_edit", requirements={"id"="\d+"})
+     * @param Categories $category
      * @param Request $request
      * @param EntityManagerInterface $entityManager
-     * @param $id
      * @return Response
      */
-    public function editCategory(Request $request, EntityManagerInterface $entityManager, $id)
+    public function editCategory(Categories $category, Request $request, EntityManagerInterface $entityManager)
     {
-        $category = $this->findCategory($id);
-
         $form = $this->createForm(CategoryAddType::class, $category, [
             'action' => $this->generateUrl('category_edit', ['id' => $category->getId()]),
             'method' => 'post',
@@ -143,60 +141,40 @@ class CategoryController extends AbstractController
             $entityManager->persist($formData);
             $entityManager->flush();
 
-            $message = "Категория была спешно изменена!";
+            $message = "The category has been hastily changed";
             $this->addFlash('success', $message);
         }
 
         return $this->render('categories/add.html.twig', [
             'controller_name' => 'CategoryController',
             'form_add' => $form->createView(),
-            'title' => 'Редактирование категории "' . $category->getTitle() . '"',
+            'title' => 'Editing the "' . $category->getTitle() . '" category',
         ]);
     }
 
     /**
      * @Route("/delete/{id}", name="_delete", requirements={"id"="\d+"})
+     * @param Categories $category
      * @param UpdateManager $updateManager
      * @param LoggerInterface $logger
-     * @param $id
      * @return Response
      */
-    public function deleteCategory(UpdateManager $updateManager, LoggerInterface $logger, $id)
+    public function deleteCategory(Categories $category, UpdateManager $updateManager, LoggerInterface $logger)
     {
-        $category = $this->findCategory($id);
-
         if ($category->getArticles()->count() > 0) {
-            throw $this->createNotFoundException(
-                'К категории привязаны некоторые статьи. Уберите привязку и повторите попытку удаления!'
-            );
+            $this->addFlash('warning', 'Some publications are included in this category. Exclude them from this category and try deleting again!');
+            return $this->redirectToRoute('category_show', ['id' => $category->getId()]);
         } else {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($category);
             $entityManager->flush();
 
-            $message = "Категория \"" . $category->getTitle() . "\" была удалена";
+            $message = "The \"" . $category->getTitle() . "\" category has been deleted";
             $logger->info($message);
             $updateManager->notifyOfUpdate($message);
             $this->addFlash('success', $message);
 
             return $this->redirectToRoute('category_show_all');
-        }
-    }
-
-    /**
-     * @param $id
-     * @return Categories
-     */
-    private function findCategory($id)
-    {
-        $entityManager = $this->getDoctrine()->getManager();
-        $category = $entityManager->getRepository(Categories::class)->find($id);
-        if (!$category) {
-            throw $this->createNotFoundException(
-                'Категория с идентификатором "' . $id . '" не найдена!'
-            );
-        } else {
-            return $category;
         }
     }
 }
