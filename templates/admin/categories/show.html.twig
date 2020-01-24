@@ -1,0 +1,68 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Category "{{ category.title }}"{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-sm-7">
+            <h1>{{ category.title }}</h1>
+            <div class="mt-3 editor-content">
+                {% autoescape %}
+                    {{ category.description|raw }}
+                {% endautoescape %}
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="p-2 bg-secondary text-white text-center">Technical details</div>
+            <ul class="list-group">
+                <li class="list-group-item rounded-0 text-white">
+                    {% if category.isVisible == 0 %}
+                        <span class="d-inline-block px-2 bg-danger">Disabled</span>
+                    {% else %}
+                        <span class="d-inline-block px-2 bg-success">Is shown</span>
+                    {% endif %}
+                </li>
+                <li class="list-group-item rounded-0"><strong>ID:</strong> {{ category.id }}</li>
+                <li class="list-group-item rounded-0"><strong>Slug:</strong> {{ category.slug }}</li>
+            </ul>
+            <div class="mt-2 p-2 bg-secondary text-white text-center">Communication</div>
+            <ul class="list-group">
+                <li class="list-group-item rounded-0">
+                    <strong>Publications </strong><span class="text-muted small">(in category):</span>
+                    <div class="mt-2">
+                        {% set users = {} %}
+                        {% if category.articles.count > 0 %}
+                            {% for article in category.articles %}
+                                <a href="{{ path('admin_article_show', {'id': article.id}) }}" class="d-block m-1">{{ article.title }}</a>
+                                {% set users = users|merge({('u_'~article.user.id):(article.user)}) %}
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small">no posts</span>
+                        {% endif %}
+                    </div>
+                </li>
+                <li class="list-group-item rounded-0">
+                    <strong>Users </strong><span class="text-muted small">(posting in a category):</span>
+                    <div class="mt-2">
+                        {% if users %}
+                            {% for user in users %}
+                                <a href="{{ path('admin_user_show', {'id': user.id}) }}" class="btn btn-light btn-sm rounded-0 m-1"><i class="fas fa-user mr-2"></i>{{ user.login }}</a>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small">no users</span>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+            <div class="mt-2 p-2 bg-secondary text-white text-center">Actions</div>
+            <div class="text-center px-2 py-3 border">
+                <a class="btn btn-warning" href="{{ path('admin_category_edit', {'id': category.id}) }}" role="button"><i class="fas fa-edit mr-2"></i>Edit</a>
+                <a class="btn btn-danger" href="{{ path('admin_category_delete', {'id': category.id}) }}" role="button"><i class="fas fa-trash-alt mr-2"></i>Delete</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('ckeditor_parse_media') }}
+{% endblock %}

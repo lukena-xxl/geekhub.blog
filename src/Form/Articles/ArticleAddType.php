@@ -99,15 +99,6 @@ class ArticleAddType extends AbstractType
                     'class' => 'font-weight-normal text-dark',
                 ],
             ])
-            ->add('create_date', DateTimeType::class, [
-                'widget' => 'single_text',
-                'label' => 'Publication Date',
-                'help' => 'This date will be recorded as the date the publication was created',
-                'attr' => [
-                    'value' => $dateTime->format('Y-m-d\TH:i:s'),
-                    'readonly' => true,
-                ],
-            ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Save',
                 'attr' => [

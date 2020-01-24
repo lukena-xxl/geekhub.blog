@@ -1,0 +1,30 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Status "{{ status.title }}"{% endblock %}
+
+{% block body %}
+    <h1><i class="fas fa-shield-alt mr-2 text-muted"></i>{{ status.title }}</h1>
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="p-2 bg-secondary text-white text-center">Technical details</div>
+            <ul class="list-group">
+                <li class="list-group-item rounded-0"><strong>ID:</strong> {{ status.id }}</li>
+            </ul>
+            <div class="mt-2 p-2 bg-secondary text-white text-center">Actions</div>
+            <div class="text-center px-2 py-3 border">
+                <a class="btn btn-warning" href="{{ path('admin_status_edit', {'id': status.id}) }}" role="button"><i class="fas fa-edit mr-2"></i>Edit</a>
+                <a class="btn btn-danger" href="{{ path('admin_status_delete', {'id': status.id}) }}" role="button"><i class="fas fa-trash-alt mr-2"></i>Delete</a>
+            </div>
+        </div>
+        <div class="col-sm-7">
+            <div class="p-2 bg-secondary text-white text-center">Users</div>
+            {% if status.users.count > 0 %}
+                {% for user in status.users %}
+                    <a href="{{ path('admin_user_show', {'id': user.id}) }}" class="btn btn-light btn-sm rounded-0 m-1"><i class="fas fa-user mr-2"></i>{{ user.login }}</a>
+                {% endfor %}
+            {% else %}
+                <span class="text-muted small">no users with this status</span>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}User "{{ user.login }}"{% endblock %}
+
+{% block body %}
+    <h1><i class="fas fa-user mr-2 text-muted"></i>{{ user.login }}</h1>
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="p-2 bg-secondary text-white text-center">Information</div>
+            <ul class="list-group">
+                <li class="list-group-item rounded-0"><strong>ID:</strong> {{ user.id }}</li>
+                <li class="list-group-item rounded-0"><strong>Status:</strong> <a href="{{ path('admin_status_show', {'id': user.status.id}) }}">{{ user.status.title }}</a></li>
+                <li class="list-group-item rounded-0"><strong>Login:</strong> {{ user.login }}</li>
+                    {% if user.email %}
+                        <li class="list-group-item rounded-0"><strong>Email:</strong> {{ user.email }}</li>
+                    {% endif %}
+                    {% if user.name %}
+                        <li class="list-group-item rounded-0"><strong>Name:</strong> {{ user.name }}</li>
+                    {% endif %}
+                    {% if user.gender %}
+                        <li class="list-group-item rounded-0"><strong>Gender:</strong> {{ user.gender }}</li>
+                    {% endif %}
+                    {% if user.birthDate %}
+                        <li class="list-group-item rounded-0"><strong>Birth date:</strong> {{ user.birthDate.format('d.m.Y') }} <strong class="text-info">({{ user.birthDate.diff(date()).format('%Y') }} лет)</strong></li>
+                    {% endif %}
+                <li class="list-group-item rounded-0"><strong>Registration date:</strong> {{ user.registrationDate.format('d.m.Y H:i') }}</li>
+            </ul>
+            <div class="mt-2 p-2 bg-secondary text-white text-center">Actions</div>
+            <div class="text-center px-2 py-3 border">
+                <a class="btn btn-warning" href="{{ path('admin_user_edit', {'id': user.id}) }}" role="button"><i class="fas fa-edit mr-2"></i>Edit</a>
+                <a class="btn btn-danger" href="{{ path('admin_user_delete', {'id': user.id}) }}" role="button"><i class="fas fa-trash-alt mr-2"></i>Delete</a>
+            </div>
+        </div>
+        <div class="col-sm-7">
+            <div class="p-2 bg-secondary text-white text-center">Communication</div>
+            <ul class="list-group">
+                <li class="list-group-item rounded-0">
+                    <strong>Added publications:</strong>
+                    <div class="mt-2">
+                        {% if user.articles.count > 0 %}
+                            {% for article in user.articles %}
+                                <a href="{{ path('admin_article_show', {'id': article.id}) }}" class="d-block m-1">{{ article.title }}</a>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small">no posts</span>
+                        {% endif %}
+                    </div>
+                </li>
+                <li class="list-group-item rounded-0">
+                    <strong>Favorite publications </strong><span class="text-muted small">(added to favorites):</span>
+                    <div class="mt-2">
+                        {% if user.favoriteArticles.count > 0 %}
+                            {% for article in user.favoriteArticles %}
+                                <a href="{{ path('admin_article_show', {'id': article.id}) }}" class="d-block m-1">{{ article.title }}</a>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small">no posts</span>
+                        {% endif %}
+                    </div>
+                </li>
+                <li class="list-group-item rounded-0">
+                    <strong>Favorite users </strong><span class="text-muted small">(added to favorites):</span>
+                    <div class="mt-2">
+                        {% if user.favoriteUsers.count > 0 %}
+                            {% for users in user.favoriteUsers %}
+                                <a href="{{ path('admin_user_show', {'id': users.id}) }}" class="btn btn-light btn-sm rounded-0 m-1"><i class="fas fa-user mr-2"></i>{{ users.login }}</a>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small">no users</span>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}
