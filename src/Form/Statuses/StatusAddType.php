@@ -2,6 +2,7 @@
 
 namespace App\Form\Statuses;
 
+use App\Entity\Statuses;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -29,6 +30,8 @@ class StatusAddType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefaults([]);
+        $resolver->setDefaults([
+            'data_class' => Statuses::class,
+        ]);
     }
 }

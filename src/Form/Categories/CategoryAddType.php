@@ -2,6 +2,7 @@
 
 namespace App\Form\Categories;
 
+use App\Entity\Categories;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -56,6 +57,8 @@ class CategoryAddType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefaults([]);
+        $resolver->setDefaults([
+            'data_class' => Categories::class,
+        ]);
     }
 }

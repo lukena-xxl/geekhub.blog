@@ -9,7 +9,7 @@
             {% for article in articles %}
                 <div class="col-xs-2 col-sm-3 pb-3">
                     <div class="card h-100">
-                        <a href="#"><img src="{% if article.image %}{{ asset('uploads/articles/'~article.image) }}{% else %}{{ asset('build/images/common/no-image.png') }}{% endif %}" class="card-img-top" alt="{{ article.title }}, photo"></a>
+                        <a href="{{ path('article_show', {'id': article.id}) }}"><img src="{% if article.image %}{{ asset('uploads/articles/'~article.image) }}{% else %}{{ asset('build/images/common/no-image.png') }}{% endif %}" class="card-img-top" alt="{{ article.title }}, photo"></a>
                         <div class="card-body">
                             <h5 class="card-title">{{ article.title }}</h5>
                             <div class="mt-2 text-info">
@@ -18,7 +18,7 @@
                             <div class="text-muted">
                                 <i class="fas fa-calendar-check mr-2"></i>{{ article.createDate.format("d.m.Y") }}
                             </div>
-                            <a href="#" class="btn btn-primary mt-3">Read</a>
+                            <a href="{{ path('article_show', {'id': article.id}) }}" class="btn btn-primary mt-3">Read</a>
                         </div>
                     </div>
                 </div>

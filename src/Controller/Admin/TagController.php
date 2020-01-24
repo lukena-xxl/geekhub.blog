@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class TagController
- * @package App\Controller
+ * @package App\Controller\Admin
  * @Route("/admin/tag", name="admin_tag")
  */
 class TagController extends AbstractController
@@ -87,17 +87,7 @@ class TagController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
-
-            $tag = new Tags();
-            $tag->setTitle($formData['title']);
-
-            if (!empty($formData['slug'])) {
-                $tag->setSlug($formData['slug']);
-            }
-
-            !empty($formData['is_visible']) ? $i = 1 : $i = 0;
-            $tag->setIsVisible($i);
+            $tag = $form->getData();
 
             $entityManager->persist($tag);
             $entityManager->flush();
@@ -134,9 +124,7 @@ class TagController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
-
-            $entityManager->persist($formData);
+            $entityManager->persist($tag);
             $entityManager->flush();
 
             $message = "The tag has been successfully modified!";

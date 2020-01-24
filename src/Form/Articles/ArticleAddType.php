@@ -2,6 +2,7 @@
 
 namespace App\Form\Articles;
 
+use App\Entity\Articles;
 use App\Entity\Categories;
 use App\Entity\Tags;
 use App\Entity\Users;
@@ -109,6 +110,8 @@ class ArticleAddType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefaults([]);
+        $resolver->setDefaults([
+            'data_class' => Articles::class,
+        ]);
     }
 }

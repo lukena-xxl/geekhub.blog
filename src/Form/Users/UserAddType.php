@@ -3,6 +3,7 @@
 namespace App\Form\Users;
 
 use App\Entity\Statuses;
+use App\Entity\Users;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
@@ -75,6 +76,8 @@ class UserAddType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefaults([]);
+        $resolver->setDefaults([
+            'data_class' => Users::class,
+        ]);
     }
 }

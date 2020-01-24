@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class CategoryController
- * @package App\Controller
+ * @package App\Controller\Admin
  * @Route("/admin/category", name="admin_category")
  */
 class CategoryController extends AbstractController
@@ -88,18 +88,7 @@ class CategoryController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
-
-            $category = new Categories();
-            $category->setTitle($formData['title']);
-            $category->setDescription($formData['description']);
-
-            if (!empty($formData['slug'])) {
-                $category->setSlug($formData['slug']);
-            }
-
-            !empty($formData['is_visible']) ? $i = 1 : $i = 0;
-            $category->setIsVisible($i);
+            $category = $form->getData();
 
             $entityManager->persist($category);
             $entityManager->flush();
@@ -136,9 +125,7 @@ class CategoryController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
-
-            $entityManager->persist($formData);
+            $entityManager->persist($category);
             $entityManager->flush();
 
             $message = "The category has been hastily changed";

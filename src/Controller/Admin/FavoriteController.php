@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class FavoriteController
- * @package App\Controller
+ * @package App\Controller\Admin
  * @Route("/admin/addtofavorites", name="admin_favorite")
  */
 class FavoriteController extends AbstractController

@@ -1,0 +1,24 @@
+{% extends 'fronted/base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+    <h1>{{ title }}</h1>
+    <div class="mt-3 form-content">
+        {{ form_start(form_add) }}
+            {{ form_row(form_add.title) }}
+            {{ form_row(form_add.slug) }}
+            {{ form_row(form_add.category) }}
+            {{ form_row(form_add.tag) }}
+            {{ form_row(form_add.body) }}
+
+            {{ form_row(form_add.go_on_public) }}
+            {{ form_row(form_add.is_visible) }}
+            {{ form_row(form_add.submit) }}
+        {{ form_end(form_add) }}
+    </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('ckeditor') }}
+{% endblock %}

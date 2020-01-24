@@ -36,7 +36,7 @@ class Tags
     private $articles;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean", options={"default":"0"})
      */
     private $is_visible = false;
 
