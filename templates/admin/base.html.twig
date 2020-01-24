@@ -26,16 +26,22 @@
                         <li class="nav-item">
                             <a class="nav-link{% if controller_name == 'ArticleController' %} active{% endif %}" href="{{ path('admin_article_show_all') }}">Publications</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if controller_name == 'UserController' %} active{% endif %}" href="{{ path('admin_user_show_all') }}">Users</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{% if controller_name == 'StatusController' %} active{% endif %}" href="{{ path('admin_status_show_all') }}">User Statuses</a>
-                        </li>
+                        {% if is_granted('ROLE_SUPER_ADMIN') %}
+                            <li class="nav-item">
+                                <a class="nav-link{% if controller_name == 'UserController' %} active{% endif %}" href="{{ path('admin_user_show_all') }}">Users</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link{% if controller_name == 'StatusController' %} active{% endif %}" href="{{ path('admin_status_show_all') }}">User Statuses</a>
+                            </li>
+                        {% endif %}
                     </ul>
                     <hr class="d-block d-lg-none" />
                     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                        <a href="{{ path('admin_user_show', {'id': app.user.id}) }}" class="font-weight-bold text-dark">{{ app.user.login }}</a>
+                        {% if is_granted('ROLE_SUPER_ADMIN') %}
+                            <a href="{{ path('admin_user_show', {'id': app.user.id}) }}" class="font-weight-bold text-dark">{{ app.user.login }}</a>
+                        {% else %}
+                            <a href="{{ path('profile_main') }}" class="font-weight-bold text-dark">{{ app.user.login }}</a>
+                        {% endif %}
                         <a href="{{ path('app_logout') }}" class="text-muted ml-2"><i class="fas fa-sign-out-alt"></i></a>
                     {% endif %}
                 </div>

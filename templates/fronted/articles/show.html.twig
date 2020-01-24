@@ -1,0 +1,21 @@
+{% extends 'fronted/base.html.twig' %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-sm-8">
+        <h1>{{ article.title }}</h1>
+        <img src="{% if article.image %}{{ asset('uploads/articles/'~article.image) }}{% else %}{{ asset('build/images/common/no-image.png') }}{% endif %}" class="img-fluid">
+        <div class="mt-3 editor-content">
+            {% autoescape %}
+                {{ article.body|raw }}
+            {% endautoescape %}
+        </div>
+    </div>
+    <div class="col-sm-4"></div>
+</div>
+{% endblock %}
+
+
+

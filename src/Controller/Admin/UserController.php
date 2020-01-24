@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class UserController
- * @package App\Controller
+ * @package App\Controller\Admin
  * @Route("/admin/user", name="admin_user")
  */
 class UserController extends AbstractController
@@ -121,21 +121,10 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
+            $user = $form->getData();
 
-            $user = new Users();
-            $user->setName($formData['name']);
-            $user->setLogin($formData['login']);
-            $user->setPassword($formData['password']);
-            $user->setEmail($formData['email']);
             $user->setRegistrationDate(new \DateTime());
-            $user->setBirthDate($formData['birth_date']);
-            $user->setGender($formData['gender']);
-
-            $status = $entityManager->getRepository(Statuses::class)->find($formData['status']);
-            if ($status) {
-                $user->setStatus($status);
-            }
+            $user->setRoles(["ROLE_" . $user->getStatus()->getTitle()]);
 
             $entityManager->persist($user);
             $entityManager->flush();
@@ -181,9 +170,9 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
+            $user->setRoles(["ROLE_" . $user->getStatus()->getTitle()]);
 
-            $entityManager->persist($formData);
+            $entityManager->persist($user);
             $entityManager->flush();
 
             $message = "User information has been successfully changed!";

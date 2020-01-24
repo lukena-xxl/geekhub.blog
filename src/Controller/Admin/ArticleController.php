@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * Class ArticleController
- * @package App\Controller
+ * @package App\Controller\Admin
  * @Route("/admin/article", name="admin_article")
  */
 class ArticleController extends AbstractController
@@ -116,46 +116,12 @@ class ArticleController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $response = [];
-
-            $formData = $form->getData();
             $datetime = new \DateTime();
 
-            $article = new Articles();
-            $article->setTitle($formData['title']);
-            $article->setBody($formData['body']);
+            $article = $form->getData();
+
             $article->setCreateDate($datetime);
             $article->setUpdateDate($datetime);
-
-            if(!empty($formData['go_on_public'])) {
-                $article->setGoOnPublic($formData['go_on_public']);
-            }
-
-            !empty($formData['is_visible']) ? $i = 1 : $i = 0;
-            $article->setIsVisible($i);
-
-            if (!empty($formData['slug'])) {
-                $article->setSlug($formData['slug']);
-            }
-
-            $category = $entityManager->getRepository(Categories::class)->find($formData['category']);
-            if ($category) {
-                $article->setCategory($category);
-            }
-
-            $user = $entityManager->getRepository(Users::class)->find($formData['user']);
-            if ($user) {
-                $article->setUser($user);
-            }
-
-            if (count($formData['tag']) > 0) {
-                $repositoryTag = $entityManager->getRepository(Tags::class);
-                foreach ($formData['tag'] as $tag_id) {
-                    $tag = $repositoryTag->find($tag_id);
-                    if ($tag) {
-                        $article->addTag($tag);
-                    }
-                }
-            }
 
             /** @var UploadedFile $file */
             $file = $form['image']->getData();
@@ -220,7 +186,6 @@ class ArticleController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
             $article->setUpdateDate(new \DateTime());
 
             /** @var UploadedFile $file */
@@ -250,7 +215,7 @@ class ArticleController extends AbstractController
             }
 
             if (!isset($response['error'])) {
-                $entityManager->persist($formData);
+                $entityManager->persist($article);
                 $entityManager->flush();
 
                 $response['id'] = $article->getId();

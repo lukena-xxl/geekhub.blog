@@ -23,7 +23,7 @@
                     </ul>
                     <hr class="d-block d-lg-none" />
                     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                        <a href="#" class="font-weight-bold text-dark">{{ app.user.login }}</a>
+                        <a href="{{ path('profile_main') }}" class="font-weight-bold text-dark">{{ app.user.login }}</a>
                         <a href="{{ path('app_logout') }}" class="text-muted ml-2"><i class="fas fa-sign-out-alt"></i></a>
                     {% else %}
                         <div class="text-muted">

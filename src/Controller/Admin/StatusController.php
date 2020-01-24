@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * Class StatusController
- * @package App\Controller
+ * @package App\Controller\Admin
  * @Route("/admin/status", name="admin_status")
  */
 class StatusController extends AbstractController
@@ -67,10 +67,8 @@ class StatusController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
-
-            $status = new Statuses();
-            $status->setTitle($formData['title']);
+            $status = $form->getData();
+            $status->setTitle(mb_strtoupper($status->getTitle(), 'UTF-8'));
 
             $entityManager->persist($status);
             $entityManager->flush();
@@ -107,9 +105,9 @@ class StatusController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $formData = $form->getData();
+            $status->setTitle(mb_strtoupper($status->getTitle(), 'UTF-8'));
 
-            $entityManager->persist($formData);
+            $entityManager->persist($status);
             $entityManager->flush();
 
             $message = "Status has been successfully changed!";

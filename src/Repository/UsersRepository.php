@@ -42,6 +42,14 @@ class UsersRepository extends ServiceEntityRepository implements PasswordUpgrade
         $this->_em->flush();
     }
 
+    public function findByRole($role)
+    {
+        $qb = $this->createQueryBuilder('u');
+        $qb->andWhere("JSON_CONTAINS(u.roles, JSON_ARRAY('".$role."')) = 1");
+        $query = $qb->getQuery();
+        return $query->execute();
+    }
+
     public function findBySort($arguments)
     {
         $arrSymbol = [

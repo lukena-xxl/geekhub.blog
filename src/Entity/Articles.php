@@ -73,7 +73,7 @@ class Articles
     private $go_on_public;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean", options={"default":"0"})
      */
     private $is_visible = false;
 
